@@ -58,10 +58,10 @@ public class Test2 extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             telemetry.addData("Status", "Walking");
-            telemetry.Line.addLine("sal");
+            telemetry.addLine("sal");
             
-            telemty.Line.addLine("saulGoodMan");
-            temetry.Line.addLine("pneumonoulciosis");
+            telemty.addLine("saulGoodMan");
+            temetry.addLine("pneumonoulciosis");
             telemetry.update();
      }
     }
