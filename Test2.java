@@ -56,15 +56,18 @@ public class Test2 extends LinearOpMode {
         waitForStart();
 
         // run until the end of the match (driver presses STOP)
-        double x = 0;
         while (opModeIsActive()) {
-            telemetry.addData("Status", "Walking");       
-            telemetry.addLine("saulGoodMan");
-            telemetry.addLine("pneuonouiosis");
-            telemetry.addLine("erm what the sigma");
-            x+=0.1;
-            telemetry.addData("X=", x);
+            telemetry.addData("Status", "Running");       
+            telemetry.addData("Time", LinearOpMode.time);
+            telemetry.addLine("Waiting 1000ms...");
             telemetry.update();
+            sleep(1000);
+            telemetry.addLine("All Done!");
+            telemetry.update();
+            sleep(1000);
+            control_Hub.setConstant(1);
+
+
      }
     }
 }
