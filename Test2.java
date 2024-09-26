@@ -7,10 +7,8 @@ associated documentation files (the "Software"), to deal in the Software without
 including without limitation the rights to use, copy, modify, merge, publish, distribute,
 sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-hghghgghgyfyfgdted
 The above copyright notice and this permission notice shall be included in all copies or substantial
 portions of the Software.
-
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
 NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
@@ -41,14 +39,18 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @TeleOp
 
 public class Test2 extends LinearOpMode {
-    private Blinker control_Hub;
+    private Blinker control_Hub_Light;
     private IMU imu;
+    private Servo servoTest;
 
 
     @Override
     public void runOpMode() {
-        control_Hub = hardwareMap.get(Blinker.class, "Control Hub");
+        control_Hub_Light = hardwareMap.get(Blinker.class, "Control Hub Light");
         imu = hardwareMap.get(IMU.class, "imu");
+
+        servoTest = hardwareMap.get(Servo.class, "servoTest");
+
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -56,18 +58,24 @@ public class Test2 extends LinearOpMode {
         waitForStart();
 
         // run until the end of the match (driver presses STOP)
+        double tgtPower = 0;
         while (opModeIsActive()) {
             telemetry.addData("Status", "Running");       
-            telemetry.addData("Time", LinearOpMode.time);
+            telemetry.addData("Time", "Test");
             telemetry.addLine("Waiting 1000ms...");
             telemetry.update();
             sleep(1000);
             telemetry.addLine("All Done!");
             telemetry.update();
             sleep(1000);
-            control_Hub.setConstant(1);
+            control_Hub_Light.setConstant(255);
 
+            servoTest.setPosition(1);
 
-     }
+            telemetry.addData("Servo Position", servoTest.getPosition());
+            telemetry.addData("Target Power", tgtPower);
+            telemetry.addData("Status", "Running");
+            telemetry.update();
+        }
     }
 }
