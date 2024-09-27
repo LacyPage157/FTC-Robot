@@ -23,18 +23,18 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class MyFIRSTJavaOpMode extends LinearOpMode {
     //private Gyroscope imu;
-    private DcMotor motorTest;
+    //private DcMotor motorTest;
     //private DigitalChannel digitalTouch;
-    //private DistanceSensor sensorColorRange;
-    //private Servo servoTest;
+    private DistanceSensor sensorColorRange;
+    private Servo servoTest;
 
 
     @Override
     public void runOpMode() {
         //imu = hardwareMap.get(Gyroscope.class, "imu");
-        motorTest = hardwareMap.get(DcMotor.class, "motorTest");
+        //motorTest = hardwareMap.get(DcMotor.class, "motorTest");
         //digitalTouch = hardwareMap.get(DigitalChannel.class, "digitalTouch");
-        //sensorColorRange = hardwareMap.get(DistanceSensor.class, "sensorColorRange");
+        sensorColorRange = hardwareMap.get(DistanceSensor.class, "sensorColorRange");
         //servoTest = hardwareMap.get(Servo.class, "servoTest");
 
         telemetry.addData("Status", "Initialized");
@@ -46,41 +46,52 @@ public class MyFIRSTJavaOpMode extends LinearOpMode {
         double tgtPower = 0;
         while (opModeIsActive()) {
             
-            tgtPower = -this.gamepad1.left_stick_y;
-            // tgtPower = -this.gamepad1.left_stick_y;
-            motorTest.setPower(tgtPower);
-            // check to see if we need to move the servo.
-            // if(gamepad1.y) {
-            //     // move to 0 degrees.
-            //     servoTest.setPosition(0);
-            // } else if (gamepad1.x || gamepad1.b) {
-            //     // move to 90 degrees.
-            //     servoTest.setPosition(0.5);
-            // } else if (gamepad1.a) {
-            //     // move to 180 degrees.
-            //     servoTest.setPosition(1);
-            // }
-            if(tgtPower > 0)
-            {
-                motorTest.setMotorSpeed(30);
-                telemetry.addData("Motor speed has been set to 30!");
-            }
-            else if(tgtPower < 0)
-            {
-                motorTest.setMotorSpeed(-30);
-                telemetry.addData("Motor speed has been set to -30");
-            }
-            else
-            {
-                motorTest.setMotorSpeed(0);
-
-            }
             
 
-            telemetry.addData("Motor Position", motorTest.getPosition());
+            tgtPower = -this.gamepad1.left_stick_y;
+            // tgtPower = -this.gamepad1.left_stick_y;
+           // motorTest.setPower(tgtPower);
+            // check to see if we need to move the servo.
+            if(gamepad1.y) {
+                // move to 0 degrees.
+                servoTest.setPosition(0);
+            } else if (gamepad1.x || gamepad1.b) {
+                // move to 90 degrees.
+                servoTest.setPosition(0.5);
+            } else if (gamepad1.a) {
+                // move to 180 degrees.
+                servoTest.setPosition(1);
+            }
+            
+            // if(tgtPower > 0)
+            // {
+            //     motorTest.setMotorSpeed(30);
+            //     telemetry.addData("Motor speed has been set to 30!");
+            // }
+            // else if(tgtPower < 0)
+            // {
+            //     motorTest.setMotorSpeed(-30);
+            //     telemetry.addData("Motor speed has been set to -30");
+            // }
+            // else
+            // {
+            //     motorTest.setMotorSpeed(0);
+
+            // }
+            
+
+            //telemetry.addData("Motor Position", motorTest.getPosition());
+            
             telemetry.addData("Target Power", tgtPower);
             telemetry.addData("Status", "Running");
+            
+            telemetry.addData("Distance (cm)", sensorColorRange.getDistance(DistanceUnit.CM));
+            telemetry.addData("Status", "Running");
+
+            //telemetry.addData("Best Match:", result.closestSwatch);
+
             telemetry.update();
+
 
 
 
