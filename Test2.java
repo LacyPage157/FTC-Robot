@@ -76,6 +76,6 @@ public class Test2 extends LinearOpMode {
             telemetry.addData("Target Power", tgtPower);
             telemetry.addData("Status", "Running");
             telemetry.update();
-        }
+        }   
     }
 }
