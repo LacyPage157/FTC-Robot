@@ -47,7 +47,6 @@ public class MyFIRSTJavaOpMode extends LinearOpMode {
         double tgtPower = 0;
         while (opModeIsActive()) {
             
-            
 
             tgtPower = -this.gamepad1.left_stick_y;
             // tgtPower = -this.gamepad1.left_stick_y;
