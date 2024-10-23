@@ -112,18 +112,6 @@ public class AprilTag extends LinearOpMode {
                     CAMERA_STREAMING = false; 
                 } else if (this.gamepad1.dpad_up) {
                     CAMERA_STREAMING = true;
-
-                if (CAMERA_STREAMING){
-                    telemetry.addData("Running","True");
-                    visionPortal.resumeStreaming();
-                    visionPortal.resumeLiveView();
-                }
-                else if (!CAMERA_STREAMING){
-                    telemetry.addData("Running","False");
-                    visionPortal.pauseStreaming();
-                    visionPortal.pauseLiveView();
-
-                }
                 }
                 telemetry.addData("time", x);
 
