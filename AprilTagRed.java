@@ -84,8 +84,8 @@ import java.util.concurrent.TimeUnit;
  *
  */
 
-
-public class RobotAutoDriveToAprilTagTank extends LinearOpMode
+@TeleOp(name="AprilTagRed", group="Robot")
+public class AprilTagRed1 extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.
     final double DESIRED_DISTANCE = 12.0; //  this is how close the camera should get to the target (inches)
@@ -103,7 +103,7 @@ public class RobotAutoDriveToAprilTagTank extends LinearOpMode
     private DcMotor rightDrive  = null;  //  Used to control the right drive wheel
 
     private static final boolean USE_WEBCAM = true;  // Set true to use a webcam, or false for a phone camera
-    private static final int DESIRED_TAG_ID = -1;    // Choose the tag you want to approach or set to -1 for ANY tag.
+    private static int DESIRED_TAG_ID = -1;    // Choose the tag you want to approach or set to -1 for ANY tag.
     private VisionPortal visionPortal;               // Used to manage the video source.
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
@@ -216,6 +216,11 @@ public class RobotAutoDriveToAprilTagTank extends LinearOpMode
     /**
      * Initialize the AprilTag processor.
      */
+
+    public void changeDesiredTag(int tag){
+        DESIRED_TAG_ID = tag;
+    }
+
     private void initAprilTag() {
         // Create the AprilTag processor by using a builder.
         aprilTag = new AprilTagProcessor.Builder().build();
