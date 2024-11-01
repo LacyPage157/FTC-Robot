@@ -85,7 +85,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 @TeleOp(name="AprilTagRed", group="Robot")
-public class AprilTagRed1 extends LinearOpMode
+public class AprilTagRed extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.
     final double DESIRED_DISTANCE = 12.0; //  this is how close the camera should get to the target (inches)
@@ -224,15 +224,15 @@ public class AprilTagRed1 extends LinearOpMode
  private void initAprilTag() {
 
         // Create the AprilTag processor.
-        aprilTag = new AprilTagProcessor.Builder();
+        aprilTag = new AprilTagProcessor.Builder()
 
             // The following default settings are available to un-comment and edit as needed.
-            aprilTag.setDrawAxes(true);
-            aprilTag.setDrawCubeProjection(true);
-            aprilTag.setDrawTagOutline(true);
-            aprilTag.setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11);
-            aprilTag.setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary());
-            aprilTag.setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES);
+            .setDrawAxes(true)
+            .setDrawCubeProjection(true)
+            .setDrawTagOutline(true)
+            .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
+            .setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
+            .setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
 
 
             // == CAMERA CALIBRATION ==
@@ -241,7 +241,7 @@ public class AprilTagRed1 extends LinearOpMode
             //.setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
             // ... these parameters are fx, fy, cx, cy.
 
-            aprilTag.build();
+            .build();
 
         // Adjust Image Decimation to trade-off detection-range for detection-rate.
         // eg: Some typical detection data using a Logitech C920 WebCam
