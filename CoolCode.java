@@ -9,9 +9,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 @TeleOp(name="TeleOpCode", group="Robot")
 public class CoolCode extends LinearOpMode {
 
-    // public DcMotor  le"leftMotor"ive   = null; //the left drivetrain motor
-    // public DcMotor  r"rightMotor"Drive  = null; //the right drivetrain motor
-    // public DcMotor  "armMotor"otor    = null; //the arm motor
+    //public DcMotor motor = hardwareMap.get(DcMotor.class, "leftMotorDrive"); //the left drivetrain motor
+    // public DcMotor  "rightMotorDrive"  = null; //the right drivetrain motor
+    // public DcMotor  "armMotor"    = null; //the arm motor
     // public CRServo  intake      = null; //the active intake servo
     // public Servo    wrist       = null; //the wrist servo
 
@@ -24,16 +24,32 @@ public class CoolCode extends LinearOpMode {
 
 
 
-    public void runOpMode() {
 
-        if(gamepad1.y) {
-            telemetry.addData("Pos","y is being pressed");
-        }
-        
-        telemetry.addData("pos","Everyframe");
-        telemetry.update();
+    public void runOpMode() {
         
         waitForStart();
+        
+        while(opModeIsActive()) {
+
+            double rightDrivePower = gamepad1.right_stick_y;
+            double leftDrivePower = gamepad1.left_stick_y;
+
+            // Controller 1 code
+            if(gamepad1.y) {
+                telemetry.addData("Pos","y is being pressed");
+            }
+
+            telemetry.addData("pos","Everyframe");
+
+            telemetry.addData("right power", rightDrivePower);
+            telemetry.addData("left power", leftDrivePower);
+            
+            // Controller 2 code
+            
+
+            telemetry.update();
+
+        }
         
         
 

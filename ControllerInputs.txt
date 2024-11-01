@@ -1,6 +1,8 @@
 
 Controller Stuff: 
 
+    access controller by gamepad1 or gamepad2
+
     (gamepad1.a)
 
     (gamepad1.b)
@@ -37,4 +39,8 @@ Motor Stuff:
     MOTORNAME.setDirection(DcMotor.Direction.FORWARD);
     MOTORNAME.setDirection(DcMotor.Direction.REVERSE);
 
-
+Defining Hardware:
+    Ex:
+    leftDrive  = hardwareMap.get(DcMotor.class, "left_front_drive"); 
+    
+    name = hardwareMap.get(Typeofthing.class, "Name in config");

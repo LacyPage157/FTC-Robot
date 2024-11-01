@@ -29,7 +29,6 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import android.util.Size;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -42,8 +41,8 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 
 /*
- * This OpMode illustrates the basics of AprilTag recognition and pose estimation,
- * including Java Builder structures for specifying Vision parameters.
+ * This OpMode illustrates the basics of AprilTag recognition and pose estimation, using
+ * the easy way.
  *
  * For an introduction to AprilTags, see the FTC-DOCS link below:
  * https://ftc-docs.firstinspires.org/en/latest/apriltag/vision_portal/apriltag_intro/apriltag-intro.html
@@ -59,15 +58,12 @@ import java.util.List;
  * To experiment with using AprilTags to navigate, try out these two driving samples:
  * RobotAutoDriveToAprilTagOmni and RobotAutoDriveToAprilTagTank
  *
- * There are many "default" VisionPortal and AprilTag configuration parameters that may be overridden if desired.
- * These default parameters are shown as comments in the code below.
- *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
  */
-@TeleOp(name = "Concept: AprilTag", group = "Concept")
+@TeleOp(name = "Concept: AprilTag Easy", group = "Concept")
 
-public class AprilTag extends LinearOpMode {
+public class ConceptAprilTagEasy extends LinearOpMode {
 
     private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
 
@@ -81,21 +77,16 @@ public class AprilTag extends LinearOpMode {
      */
     private VisionPortal visionPortal;
 
-    private boolean runCamera = true;
-
     @Override
     public void runOpMode() {
 
-        
+        initAprilTag();
 
         // Wait for the DS start button to be touched.
-        initAprilTag();
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         telemetry.addData(">", "Touch START to start OpMode");
         telemetry.update();
-        boolean CAMERA_STREAMING = true;
         waitForStart();
-        
 
         if (opModeIsActive()) {
             while (opModeIsActive()) {
@@ -106,19 +97,16 @@ public class AprilTag extends LinearOpMode {
                 telemetry.update();
 
                 // Save CPU resources; can resume streaming when needed.
-                
-                    runCamera = true;
-                if (this.gamepad1.dpad_down) {
-                    CAMERA_STREAMING = false; 
-                } else if (this.gamepad1.dpad_up) {
-                    CAMERA_STREAMING = true;
+                if (gamepad1.dpad_down) {
+                    visionPortal.stopStreaming();
+                } else if (gamepad1.dpad_up) {
+                    visionPortal.resumeStreaming();
                 }
 
                 // Share the CPU.
-                sleep(1000);
+                sleep(20);
             }
         }
-
 
         // Save more CPU resources when camera is no longer needed.
         visionPortal.close();
@@ -134,12 +122,13 @@ public class AprilTag extends LinearOpMode {
         aprilTag = new AprilTagProcessor.Builder()
 
             // The following default settings are available to un-comment and edit as needed.
-            .setDrawAxes(true)
-            .setDrawCubeProjection(true)
-            .setDrawTagOutline(true)
-            .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
-            .setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
-            .setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
+            aprilTag.setDrawAxes(true)
+            aprilTag.setDrawCubeProjection(true)
+            aprilTag.setDrawTagOutline(true)
+            aprilTag.setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
+            aprilTag.setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
+            aprilTag.setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
+
 
             // == CAMERA CALIBRATION ==
             // If you do not manually specify calibration parameters, the SDK will attempt
@@ -147,7 +136,7 @@ public class AprilTag extends LinearOpMode {
             //.setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
             // ... these parameters are fx, fy, cx, cy.
 
-            .build();
+            aprilTag.build();
 
         // Adjust Image Decimation to trade-off detection-range for detection-rate.
         // eg: Some typical detection data using a Logitech C920 WebCam
@@ -194,8 +183,6 @@ public class AprilTag extends LinearOpMode {
 
     
     }   // end method initAprilTag()
-
-
     /**
      * Add telemetry about AprilTag detections.
      */
