@@ -34,6 +34,9 @@ public class CoolCode extends LinearOpMode {
             double rightDrivePower = gamepad1.right_stick_y;
             double leftDrivePower = gamepad1.left_stick_y;
 
+            double arm2Power = = gamepad2.right_stick_y;
+            double arm1Power = gamepad1.left_stick_y;
+
             // Controller 1 code
             if(gamepad1.y) {
                 telemetry.addData("Pos","y is being pressed");
