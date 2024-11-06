@@ -16,13 +16,35 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-@Autonomous(name="TaskManager", group="Robot")
-public static class TaskManager extends LinearOpMode
-{
-    int phase = 0;
-    @Override public void runOpMode()
-    {
-        
+
+public static class TaskManager {
+    public int phase = 0;
+    public static main(){
+
+        switch(phase){
+            case 0:
+                HardCode.runOpMode();
+                telemetry.addData("Status","RunningHardCode.java");
+                break;
+
+            case 1:
+                ColorLocator.runOpMode();
+                telemetry.addData("Status","RunningHardCode.java")
+
+                break;
+
+            case 2:
+
+                break;
+
+            default:
+                telemetry.addData("Status","Error:DefaultCaseAtPhaseUndefined");
+                break;
+
+        }
+        telemetry.update()
+        }
+
 
 
 
@@ -33,4 +55,4 @@ public static class TaskManager extends LinearOpMode
 
 
 
-}
+

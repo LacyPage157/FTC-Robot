@@ -84,8 +84,8 @@ import java.util.concurrent.TimeUnit;
  *
  */
 
-@Autonomous(name="AprilTagRed", group="Robot")
-public static class AprilTagRed extends LinearOpMode
+@Autonomous(name="Orientate", group="Robot")
+public class Orientate extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.
     final double DESIRED_DISTANCE = 24.0; //  this is how close the camera should get to the target (inches)
@@ -281,7 +281,7 @@ public static class AprilTagRed extends LinearOpMode
 }
 
 
-}rrent.TimeUnit;
+
 
 
 
