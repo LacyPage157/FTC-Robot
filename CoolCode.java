@@ -15,19 +15,29 @@ public class CoolCode extends LinearOpMode {
     // public CRServo  intake      = null; //the active intake servo
     // public Servo    wrist       = null; //the wrist servo
 
-    // final double ARM_TICKS_PER_DEGREE =
-    //         28 // number of encoder ticks per rotation of the bare motor
-    //                 * 250047.0 / 4913.0 // This is the exact gear ratio of the 50.9:1 Yellow Jacket gearbox
-    //                 * 100.0 / 20.0 // This is the external gear reduction, a 20T pinion gear that drives a 100T hub-mount gear
-    //                 * 1/360.0; // we want ticks per degree, not per rotation
+    final double ARM_TICKS_PER_DEGREE =
+            28 // number of encoder ticks per rotation of the bare motor
+                    * 250047.0 / 4913.0 // This is the exact gear ratio of the 50.9:1 Yellow Jacket gearbox
+                    * 100.0 / 20.0 // This is the external gear reduction, a 20T pinion gear that drives a 100T hub-mount gear
+                    * 1/360.0; // we want ticks per degree, not per rotation
 
+    final double ARM_PLACEMENT_TEST = 15  * ARM_TICKS_PER_DEGREE;
 
+    private DcMotor rightDrive;
+    private DcMotor leftDrive;
+    private DcMotor armOne;
+    private DcMotor armTwo;
 
 
 
     public void runOpMode() {
-        
+        //add button to change max speed
         waitForStart();
+
+        rightDrive = hardwareMap.get(DcMotor.class, "rightMotor");
+        leftDrive = hardwareMap.get(DcMotor.class, "leftMotor");
+        armOne = hardwareMap.get(DcMotor.class, "armOne");
+        armTwo = hardwareMap.get(DcMotor.class, "armTwo");
         
         while(opModeIsActive()) {
 
@@ -48,7 +58,12 @@ public class CoolCode extends LinearOpMode {
             telemetry.addData("left power", leftDrivePower);
             
             // Controller 2 code
-            
+            rightDrive.setPower(rightDrivePower);
+
+            armTwo.setTargetPosition((int) (ARM_PLACEMENT_TEST));
+
+            ((DcMotorEx) armTwo).setVelocity(1000);
+            armTwo.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             telemetry.update();
 
