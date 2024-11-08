@@ -108,6 +108,10 @@ public class Orientate extends LinearOpMode
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
 
+    private float robRange;
+    private float robBearing;
+    private float robYaw;
+
     @Override public void runOpMode()
     {
         boolean targetFound     = false;    // Set to true when an AprilTag target is detected
@@ -120,8 +124,8 @@ public class Orientate extends LinearOpMode
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must match the names assigned during the robot configuration.
         // step (using the FTC Robot Controller app on the phone).
-        leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
-        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
+        rightDrive = hardwareMap.get(DcMotor.class, "rightMotor");
+        leftDrive = hardwareMap.get(DcMotor.class, "leftMotor");
 
         // To drive forward, most robots need the motor on one side to be reversed because the axles point in opposite directions.
         // When run, this OpMode should start both motors driving forward. So adjust these two lines based on your first test drive.
@@ -170,6 +174,45 @@ public class Orientate extends LinearOpMode
                 telemetry.addData("Found", "ID %d (%s)", desiredTag.id, desiredTag.metadata.name);
                 telemetry.addData("Range",  "%5.1f inches", desiredTag.ftcPose.range);
                 telemetry.addData("Bearing","%3.0f degrees", desiredTag.ftcPose.bearing);
+                telemetry.addData("Yaw", "%3.0f degrees", desiredTag.ftcPose.yaw);
+
+                robBearing = desiredTag.ftcPose.bearing;
+                robRange = desiredTag.ftcPose.bearing;
+                robYaw = desiredTag.ftcPose.yaw;
+
+                
+                
+
+                // Use the speed and turn "gains" to calculate how we want the robot to move.  Clip it to the maximum
+
+                
+                turn  = Range.clip(robYaw * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
+                
+
+     
+                telemetry.addData("Yaw is positive, rotate left until robYaw is 0");
+                //align the yaw so we can work with even values like 90 degrees
+                if(robYaw < 0.2 || robYaw > -0.2 && (!(robYaw == 0)))
+                {
+                    turn  = Range.clip(robYaw * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
+                    telemetry.addData("Yaw", "Yaw turning, rotate until robYaw is 0");
+                    
+
+                    moveRobot(0,-turn);
+                }
+                //move(0,-90);
+                //rotate 90 degrees to the left
+                
+                double angleRad = Math.toRadians(90-robBearing);
+                double needTravel = robRange * Math.cos(angleRad);
+
+                //moving the desired distance
+                // move(needTravel, 0);
+                // move(0,90);
+
+
+                
+
             
                 
             }

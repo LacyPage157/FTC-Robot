@@ -99,8 +99,8 @@ public static class AprilTagRed extends LinearOpMode
     final double MAX_AUTO_SPEED = 0.5;   //  Clip the approach speed to this max value (adjust for your robot)
     final double MAX_AUTO_TURN  = 0.25;  //  Clip the turn speed to this max value (adjust for your robot)
 
-    private DcMotor leftDrive   = null;  //  Used to control the left drive wheel
-    private DcMotor rightDrive  = null;  //  Used to control the right drive wheel
+    rightDrive = hardwareMap.get(DcMotor.class, "rightMotor");
+    leftDrive = hardwareMap.get(DcMotor.class, "leftMotor");
 
     private static final boolean USE_WEBCAM = true;  // Set true to use a webcam, or false for a phone camera
     private static int DESIRED_TAG_ID = -1;    // Choose the tag you want to approach or set to -1 for ANY tag.

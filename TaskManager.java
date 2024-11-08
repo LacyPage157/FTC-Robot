@@ -23,13 +23,12 @@ public static class TaskManager {
 
         switch(phase){
             case 0:
-                HardCode.runOpMode();
-                telemetry.addData("Status","RunningHardCode.java");
+                ColorLocator.runOpMode();
+                telemetry.addData("Status","ColorLocator.java")
                 break;
 
             case 1:
-                ColorLocator.runOpMode();
-                telemetry.addData("Status","RunningHardCode.java")
+                
 
                 break;
 
