@@ -17,13 +17,60 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
-public static class TaskManager {
-    public int phase = 0;
+public class TaskManager {
+    private int phase = 0;
+    private Boolean teamRed = null;
 
+    public static void setPhase(int p){
+        this.phase = p;
+    }
 
-    public static main(int phase){
+    public static void setTeamToRed(Boolean x){
+        teamRed = x;
+    }
+
+    public static void main(int phase){
 
         switch(phase){
+            case 0:
+                this.phase = 0;
+                ColorLocator.runOpMode();
+                telemetry.addData("Status","ColorLocator.java");
+                break;
+
+            case 1:
+                this.phase = 1;
+                AprilTagRed.runOpMode(); //NOTE: AprilTagRed is the same as AprilTagBlue, as such we will use RED as a universal.
+                AprilTagRed.setDecimation(1);
+                telemetry.addData("Status","AprilTagRed.java");
+                break;
+
+            case 2:
+                this.phase = 2;
+                //FOR NOW -1 -- Later will implement a more rigid system for what we are trying to look for.
+                Orientate.runOpMode();
+                telemetry.addData("Status","Orientate.java");
+                break;
+            case 3:
+                this.phase = 3;
+                HardCode.runOpMode();
+                telemetry.addData("Status","HardCode.java");
+                break;
+
+///Probably reset here. 
+//Run hard code after 
+
+            default:
+                telemetry.addData("Status","Error:DefaultCaseAtPhaseUndefined");
+                break;
+
+        }
+        telemetry.update();
+        }
+
+    public static void main(){
+
+        switch(this.phase){
             case 0:
                 ColorLocator.runOpMode();
                 telemetry.addData("Status","ColorLocator.java");
@@ -36,7 +83,7 @@ public static class TaskManager {
                 break;
 
             case 2:
-                Orientate.setDesiredTag(-1); //FOR NOW -1 -- Later will implement a more rigid system for what we are trying to look for.
+             //FOR NOW -1 -- Later will implement a more rigid system for what we are trying to look for.
                 Orientate.runOpMode();
                 telemetry.addData("Status","Orientate.java");
                 break;
@@ -53,8 +100,12 @@ public static class TaskManager {
                 break;
 
         }
-        telemetry.update()
-        }
+        telemetry.update();
+
+
+
+
+    }
 
 
 
