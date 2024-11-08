@@ -19,6 +19,10 @@ public class HardCode extends LinearOpMode
     final double MAX_AUTO_SPEED = 0.5;   //  Clip the approach speed to this max value (adjust for your robot)
     final double MAX_AUTO_TURN  = 0.25;  //  Clip the turn speed to this max value (adjust for your robot)
 
+    private double DESIRED_DISTANCE  = null; // Set in inches
+
+
+
     private DcMotor leftDrive   = null;  //  Used to control the left drive wheel
     private DcMotor rightDrive  = null;  //  Used to control the right drive wheel--Consult with Niko for setting up hardware map.
 
@@ -27,5 +31,9 @@ public class HardCode extends LinearOpMode
         //All you Alex & Rishi
         //If possible, use a lot of variables. The easier the modify the code on the fly, the better.
         //
+    }
+
+    public void setDesiredDistance(double x){ //X is in inches for consistency
+        DESIRED_DISTANCE = x*25.4 //Convert inches to mm
     }
 }

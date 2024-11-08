@@ -325,7 +325,50 @@ public class Orientate extends LinearOpMode
 
 
 
+/*
+DcMotorController	getController()
+Returns the underlying motor controller on which this motor is situated.
 
+int	getCurrentPosition()
+Returns the current reading of the encoder for this motor.
+
+DcMotor.RunMode	getMode()
+Returns the current run mode for this motor
+
+MotorConfigurationType	getMotorType()
+Returns the assigned type for this motor.
+
+int	getPortNumber()
+Returns the port number on the underlying motor controller on which this motor is situated.
+
+boolean	getPowerFloat()
+Returns whether the motor is currently in a float power level.
+
+int	getTargetPosition()
+Returns the current target encoder position for this motor.
+
+DcMotor.ZeroPowerBehavior	getZeroPowerBehavior()
+Returns the current behavior of the motor were a power level of zero to be applied.
+
+boolean	isBusy()
+Returns true if the motor is currently advancing or retreating to a target position.
+
+void	setMode(DcMotor.RunMode mode)
+Sets the current run mode for this motor
+
+void	setMotorType(MotorConfigurationType motorType)
+Sets the assigned type of this motor.
+
+void	setPowerFloat()
+Deprecated. 
+This method is deprecated in favor of direct use of setZeroPowerBehavior() and setPower().
+
+void	setTargetPosition(int position)
+Sets the desired encoder target position to which the motor should advance or retreat and then actively hold there at.
+
+void	setZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior)
+Sets the behavior of the motor when a power level of zero is applied.
+*/
 
 
 

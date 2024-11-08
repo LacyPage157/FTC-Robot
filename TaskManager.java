@@ -19,22 +19,35 @@ import java.util.concurrent.TimeUnit;
 
 public static class TaskManager {
     public int phase = 0;
-    public static main(){
+
+
+    public static main(int phase){
 
         switch(phase){
             case 0:
                 ColorLocator.runOpMode();
-                telemetry.addData("Status","ColorLocator.java")
+                telemetry.addData("Status","ColorLocator.java");
                 break;
 
             case 1:
+                AprilTagRed.runOpMode(); //NOTE: AprilTagRed is the same as AprilTagBlue, as such we will use RED as a universal.
                 
+                telemetry.addData("Status","AprilTagRed.java");
 
                 break;
 
             case 2:
-
+                Orientate.setDesiredTag(-1); //FOR NOW -1 -- Later will implement a more rigid system for what we are trying to look for.
+                Orientate.runOpMode();
+                telemetry.addData("Status","Orientate.java");
                 break;
+            case 3:
+                HardCode.runOpMode();
+                telemetry.addData("Status","HardCode.java");
+                break;
+
+///Probably reset here. 
+//Run hard code after 
 
             default:
                 telemetry.addData("Status","Error:DefaultCaseAtPhaseUndefined");
