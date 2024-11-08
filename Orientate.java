@@ -190,12 +190,12 @@ public class Orientate extends LinearOpMode
                 
 
      
-                telemetry.addData("Yaw is positive, rotate left until robYaw is 0");
+                telemetry.addData("Yaw", "Yaw is positive, rotate left until robYaw is 0");
                 //align the yaw so we can work with even values like 90 degrees
                 if(robYaw < 0.2 || robYaw > -0.2 && (!(robYaw == 0)))
                 {
                     turn  = Range.clip(robYaw * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
-                    telemetry.addData("Yaw", "Yaw turning, rotate until robYaw is 0");
+                    telemetry.addData("Yaw:", robYaw);
                     
 
                     moveRobot(0,-turn);

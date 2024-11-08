@@ -31,9 +31,8 @@ public static class TaskManager {
 
             case 1:
                 AprilTagRed.runOpMode(); //NOTE: AprilTagRed is the same as AprilTagBlue, as such we will use RED as a universal.
-                
+                AprilTagRed.setDecimation(1);
                 telemetry.addData("Status","AprilTagRed.java");
-
                 break;
 
             case 2:

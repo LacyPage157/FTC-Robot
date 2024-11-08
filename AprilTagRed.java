@@ -175,6 +175,7 @@ public static class AprilTagRed extends LinearOpMode
                 double  rangeError   = (desiredTag.ftcPose.range - DESIRED_DISTANCE);
                 double  headingError = desiredTag.ftcPose.bearing;
 
+                
                 // Use the speed and turn "gains" to calculate how we want the robot to move.  Clip it to the maximum
                 drive = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
                 turn  = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
@@ -186,7 +187,14 @@ public static class AprilTagRed extends LinearOpMode
             // Apply desired axes motions to the drivetrain.
             moveRobot(drive, turn);
             sleep(10);
+            if (rangeError < 0.1 && rangeError > -0.1){
+                Orientate.changeDesiredTag(desiredTag.id);
+                TaskManager.main(2);
+                stop();
+            }
         }
+        
+
     }
 
     /**
