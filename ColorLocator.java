@@ -195,20 +195,122 @@ public class ColorLocator extends LinearOpMode
                 RotatedRect boxFit = b.getBoxFit();
                 telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d)",
                           b.getContourArea(), b.getDensity(), b.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y));
-
+                          int red = 0;
+                          int blue = 1;
+                          int yellow = 2;
+                          int green = 3; // Dont redeclare everytime, move this up a couple lines for initialzation.
 
                       /*First, create variables that are changable for which team we are -- Ie. Which color we are looking for.
                         We will always look for yellow, (red and blue changes depending on team).  Center our
                         robot so that we are looking right at the boxFit.centerX. Drive to sample. Work with Niko to copy code so that intake 
                         will automatically activate, arm will go up, etc... Then consult with hard code to get back to observation
                         zone.
-                        
                       */
-                        
-            }
 
-            telemetry.update();
-            sleep(50);
+            }
         }
     }
+        public void moveRobot(double x, double yaw) {
+        // Calculate left and right wheel powers.
+        double leftPower    = x - yaw;
+        double rightPower   = x + yaw;
+
+        // Normalize wheel powers to be less than 1.0
+        double max = Math.max(Math.abs(leftPower), Math.abs(rightPower));
+        if (max >1.0) {
+            leftPower /= max;
+            rightPower /= max;
+        }
+
+        // Send powers to the wheels.
+        leftDrive.setPower(leftPower);
+        rightDrive.setPower(rightPower);
+    }
+
+    /**
+     * Initialize the AprilTag processor.
+     */
+
+            // Adjust Image Decimation to trade-off detection-range for detection-rate.
+        // eg: Some typical detection data using a Logitech C920 WebCam
+        // Decimation = 1 ..  Detect 2" Tag from 10 feet away at 10 Frames per second
+        // Decimation = 2 ..  Detect 2" Tag from 6  feet away at 22 Frames per second
+        // Decimation = 3 ..  Detect 2" Tag from 4  feet away at 30 Frames Per Second (default)
+        // Decimation = 3 ..  Detect 5" Tag from 10 feet away at 30 Frames Per Second (default)
+        // Note: Decimation can be changed on-the-fly to adapt during a match.
+        //aprilTag.setDecimation(3);
+
+    public void changeDesiredTag(int tag){
+        DESIRED_TAG_ID = tag;
+    }
+
+    public void setDecimation(int dec){
+        aprilTag.setDecimation(dec);
+    }
+
+    private void initAprilTag() {
+
+        // Create the AprilTag processor the easy way.
+        aprilTag = AprilTagProcessor.easyCreateWithDefaults();
+
+        // Create the vision portal the easy way.
+        if (USE_WEBCAM) {
+            visionPortal = VisionPortal.easyCreateWithDefaults(
+                hardwareMap.get(WebcamName.class, "Webcam 1"), aprilTag);
+        } else {
+            visionPortal = VisionPortal.easyCreateWithDefaults(
+                BuiltinCameraDirection.BACK, aprilTag);
+        }
+
+    }   // end method initAprilTag()
+    /*
+     Manually set the camera gain and exposure.
+     This can only be called AFTER calling initAprilTag(), and only works for Webcams;
+    */
+    private void    setManualExposure(int exposureMS, int gain) {
+        // Wait for the camera to be open, then use the controls
+
+        if (visionPortal == null) {
+            return;
+        }
+
+        // Make sure camera is streaming before we try to set the exposure controls
+        if (visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
+            telemetry.addData("Camera", "Waiting");
+            telemetry.update();
+            while (!isStopRequested() && (visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING)) {
+                sleep(20);
+            }
+            telemetry.addData("Camera", "Ready");
+            telemetry.update();
+        }
+
+        // Set camera controls unless we are stopping.
+        if (!isStopRequested())
+        {
+            ExposureControl exposureControl = visionPortal.getCameraControl(ExposureControl.class);
+            if (exposureControl.getMode() != ExposureControl.Mode.Manual) {
+                exposureControl.setMode(ExposureControl.Mode.Manual);
+                sleep(50);
+            }
+            exposureControl.setExposure((long)exposureMS, TimeUnit.MILLISECONDS);
+            sleep(20);
+            GainControl gainControl = visionPortal.getCameraControl(GainControl.class);
+            gainControl.setGain(gain);
+            sleep(20);
+            telemetry.addData("Camera", "Ready");
+            telemetry.update();
+        }
+    }
+        
+
+                      
+                        
+            
+
+    telemetry.update();
+    sleep(50);
+
 }
+            
+        

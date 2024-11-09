@@ -168,6 +168,11 @@ public class Orientate extends LinearOpMode
                 }
             }
 
+            //first: Rotate around until you locate desired tag
+            // {
+
+            // }
+
             // Tell the driver what we see, and what to do.
             if (targetFound) {
                 // telemetry.addData("\n>","HOLD Left-Bumper to Drive to Target\n");
@@ -176,39 +181,84 @@ public class Orientate extends LinearOpMode
                 telemetry.addData("Bearing","%3.0f degrees", desiredTag.ftcPose.bearing);
                 telemetry.addData("Yaw", "%3.0f degrees", desiredTag.ftcPose.yaw);
 
+                
+
+
+                boolean isCentered = false;
+
+                
+
+
+
+
+
+                //set temprorary variables for yaw, range bearing at that moment
                 robBearing = desiredTag.ftcPose.bearing;
                 robRange = desiredTag.ftcPose.bearing;
                 robYaw = desiredTag.ftcPose.yaw;
+                boolean posRotate = true;
+
+
+
+                //move robot to be aligned with the yaw
+                //HardCode.rotateRobot(robYaw);
+
+
+                //rotate to the left or right depending on the value of the yaw
+                if(robYaw < 0 )
+                {
+                    telemetry.addData("Yaw","Yaw is negative, rotate 90 degrees right");
+                    //rotate right 90 degrees
+                    HardCode.rotateRobot(-90);
+                }
+                else if(robYaw > 0)
+                {
+                    telemetry.addData("Yaw","Yaw is positive, rotate 90 degrees left");
+                    HardCode.rotateRobot(90);
+                }
+                
+
+                //move to the left using the cos code
+                double needDistance = Math.cos(90 - robBearing) * robRange;
+                HardCode.setDesiredDistance(needDistance);
+
+
+                //rotate right by 90 degrees the other way
+                telemetry.addData("Yaw", "Turn 90 degrees opposite of the first direction to look at tag");
+                if(robYaw < 0)
+                {
+                    HardCode.rotateRobot(90);
+                    telemetry.addData("Yaw","rotate 90 degress right");
+                }
+                else if(robYaw > 0)
+                {
+                    HardCode.rotateRobot(-90);
+                    telemetry.addData("Yaw","rotate 90 degrees left");
+                }
+
+                //run the movement forward or back code
+                AprilTagRed.runOpMode();
+                HardCode.runOpMode();
+
+
 
                 
-                
-
-                // Use the speed and turn "gains" to calculate how we want the robot to move.  Clip it to the maximum
 
                 
-                turn  = Range.clip(robYaw * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
+
+                //move 
+
+                
+
                 
 
      
-                telemetry.addData("Yaw", "Yaw is positive, rotate left until robYaw is 0");
-                //align the yaw so we can work with even values like 90 degrees
+                
                 if(robYaw < 0.2 || robYaw > -0.2 && (!(robYaw == 0)))
                 {
-                    turn  = Range.clip(robYaw * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
-                    telemetry.addData("Yaw:", robYaw);
                     
-
-                    moveRobot(0,-turn);
                 }
-                //move(0,-90);
-                //rotate 90 degrees to the left
                 
-                double angleRad = Math.toRadians(90-robBearing);
-                double needTravel = robRange * Math.cos(angleRad);
-
-                //moving the desired distance
-                // move(needTravel, 0);
-                // move(0,90);
 
 
                 

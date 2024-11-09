@@ -178,7 +178,7 @@ public static class AprilTagRed extends LinearOpMode
                 
                 // Use the speed and turn "gains" to calculate how we want the robot to move.  Clip it to the maximum
                 drive = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
-                turn  = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
+                turn  = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN); //THISSSSSSSS
 
                 telemetry.addData("Auto","Drive %5.2f, Turn %5.2f", drive, turn);
             }

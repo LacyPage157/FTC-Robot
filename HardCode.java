@@ -57,19 +57,21 @@ public class HardCode extends LinearOpMode
 
         while(opModeIsActive()) {
         
-        for((int)targetRotations; rotationsLeft!=(int)targetRotations; rotationsLeft+=1){
+        for(int i = (int)targetRotations; rotationsLeft!=i; i++){
             leftDrive.setTargetPosition(360);
             rightDrive.setTargetPosition(360);
             leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rotationsLeft ++;
         }
         leftDrive.setTargetPosition(targetRotations-rotationsLeft);
         leftDrive.setTargetPosition(targetRotations-rotationsRight);
         if ((targetRotations-(int)targetRotations) == leftDrive.getCurrentPosition()){
             stop();
             taskManager.main(0);
+            rightDrive.setDirection(DcMotor.Direction.FORWARD);
         }
 
             
@@ -88,8 +90,16 @@ public class HardCode extends LinearOpMode
         DESIRED_DISTANCE = x*25.4 //Convert inches to mm
     }
 
-    public void rotateRobot(int degrees){
-        //empty
+    public void rotateRobot(double degrees){
+        targetRotations=(434/96)*(degrees/360);
+        rightDrive.setDirection(DcMotor.Direction.REVERSE);
+        runOpMode();
+
+
+
+
+
+        
     }
 
         public void moveRobot(double x, double yaw) {
