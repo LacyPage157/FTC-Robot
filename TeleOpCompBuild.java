@@ -44,14 +44,15 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
  */
 
 
-@TeleOp(name="FTC Starter Kit Example Robot (INTO THE DEEP)", group="Robot")
+@TeleOp(name="FTC TeleOp Comp Build", group="Robot")
 //@Disabled
-public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMode {
+public class TeleOpCompBuild extends LinearOpMode {
 
     /* Declare OpMode members. */
     public DcMotor  leftDrive   = null; //the left drivetrain motor
     public DcMotor  rightDrive  = null; //the right drivetrain motor
     public DcMotor  armMotor    = null; //the arm motor
+    public DcMotor  armTwo    = null; //the arm motor
     public CRServo  intake      = null; //the active intake servo
     public Servo    wrist       = null; //the wrist servo
 
@@ -121,15 +122,16 @@ public class ConceptGoBildaStarterKitRobotTeleop_IntoTheDeep extends LinearOpMod
 
 
         /* Define and Initialize Motors */
-        leftDrive  = hardwareMap.get(DcMotor.class, "left_front_drive"); //the left drivetrain motor
-        rightDrive = hardwareMap.get(DcMotor.class, "right_front_drive"); //the right drivetrain motor
-        armMotor   = hardwareMap.get(DcMotor.class, "left_arm"); //the arm motor
+        leftDrive  = hardwareMap.get(DcMotor.class, "rightMotor"); //the left drivetrain motor
+        rightDrive = hardwareMap.get(DcMotor.class, "leftMotor"); //the right drivetrain motor
+        armMotor   = hardwareMap.get(DcMotor.class, "armOne"); //the arm main motor
+        armTwo = hardwareMap.get(DcMotor.class, "armTwo"); //the sub arm motor
 
 
         /* Most skid-steer/differential drive robots require reversing one motor to drive forward.
         for this robot, we reverse the right motor.*/
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightDrive.setDirection(DcMotor.Direction.FORWARD);
 
 
         /* Setting zeroPowerBehavior to BRAKE enables a "brake mode". This causes the motor to slow down
