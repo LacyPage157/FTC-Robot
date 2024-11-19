@@ -42,6 +42,9 @@ public class HardCode extends LinearOpMode
         rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         basePosLeft = leftDrive.getCurrentPosition();
         basePosRight = rightDrive.getCurrentPosition();
+        leftDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightDrive.setDirection(DcMotor.Direction.REVERSE);
+
 
         
 
@@ -69,9 +72,10 @@ public class HardCode extends LinearOpMode
         leftDrive.setTargetPosition(targetRotations-rotationsLeft);
         leftDrive.setTargetPosition(targetRotations-rotationsRight);
         if ((targetRotations-(int)targetRotations) == leftDrive.getCurrentPosition()){
+            leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            rightDrive.setDirection(DcMotor.Direction.REVERSE);
             stop();
-            taskManager.main(0);
-            rightDrive.setDirection(DcMotor.Direction.FORWARD);
         }
 
             
@@ -92,7 +96,7 @@ public class HardCode extends LinearOpMode
 
     public void rotateRobot(double degrees){
         targetRotations=(434/96)*(degrees/360);
-        rightDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightDrive.setDirection(DcMotor.Direction.FORWARD);
         runOpMode();
 
 

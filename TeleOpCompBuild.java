@@ -85,11 +85,11 @@ public class TeleOpCompBuild extends LinearOpMode {
     as far from the starting position, decrease it. */
 
     final double ARM_COLLAPSED_INTO_ROBOT  = 0;
-    final double ARM_COLLECT               = 250 * ARM_TICKS_PER_DEGREE;
-    final double ARM_CLEAR_BARRIER         = 230 * ARM_TICKS_PER_DEGREE;
-    final double ARM_SCORE_SPECIMEN        = 160 * ARM_TICKS_PER_DEGREE;
-    final double ARM_SCORE_SAMPLE_IN_LOW   = 160 * ARM_TICKS_PER_DEGREE;
-    final double ARM_ATTACH_HANGING_HOOK   = 120 * ARM_TICKS_PER_DEGREE;
+    final double ARM_COLLECT               = 150 * ARM_TICKS_PER_DEGREE;
+    final double ARM_CLEAR_BARRIER         = 130 * ARM_TICKS_PER_DEGREE;
+    final double ARM_SCORE_SPECIMEN        = 60 * ARM_TICKS_PER_DEGREE;
+    final double ARM_SCORE_SAMPLE_IN_LOW   = 60 * ARM_TICKS_PER_DEGREE;
+    final double ARM_ATTACH_HANGING_HOOK   = 20 * ARM_TICKS_PER_DEGREE;
     final double ARM_WINCH_ROBOT           = 15  * ARM_TICKS_PER_DEGREE;
 
     /* Variables to store the speed the intake servo should be set at to intake, and deposit game elements. */
@@ -131,7 +131,7 @@ public class TeleOpCompBuild extends LinearOpMode {
         /* Most skid-steer/differential drive robots require reversing one motor to drive forward.
         for this robot, we reverse the right motor.*/
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightDrive.setDirection(DcMotor.Direction.REVERSE);
 
 
         /* Setting zeroPowerBehavior to BRAKE enables a "brake mode". This causes the motor to slow down
@@ -156,6 +156,7 @@ public class TeleOpCompBuild extends LinearOpMode {
         /* Define and initialize servos.*/
         intake = hardwareMap.get(CRServo.class, "intake");
         wrist  = hardwareMap.get(Servo.class, "wrist");
+        
 
         /* Make sure that the intake is off, and the wrist is folded in. */
         intake.setPower(INTAKE_OFF);
@@ -173,8 +174,20 @@ public class TeleOpCompBuild extends LinearOpMode {
 
             /* Set the drive and turn variables to follow the joysticks on the gamepad.
             the joysticks decrease as you push them up. So reverse the Y axis. */
-            forward = -gamepad1.left_stick_y;
-            rotate  = gamepad1.right_stick_x;
+            forward = -gamepad2.left_stick_y;
+            rotate  = gamepad2.right_stick_x;
+            
+            if(gamepad2.x) {
+                HardCode.rotateRobot(90);
+            }
+            
+            if(gamepad2.b) {
+                HardCode.rotateRobot(-90);
+            }
+            
+            if(gamepad2.a) {
+                HardCode.rotateRobot(180);
+            }
 
 
             /* Here we "mix" the input channels together to find the power to apply to each motor.
@@ -298,7 +311,7 @@ public class TeleOpCompBuild extends LinearOpMode {
             We also set the target velocity (speed) the motor runs at, and use setMode to run it.*/
             armMotor.setTargetPosition((int) (armPosition + armPositionFudgeFactor));
 
-            ((DcMotorEx) armMotor).setVelocity(100);
+            ((DcMotorEx) armMotor).setVelocity(2100);
             armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             /* TECH TIP: Encoders, integers, and doubles
@@ -335,3 +348,4 @@ public class TeleOpCompBuild extends LinearOpMode {
         }
     }
 }
+

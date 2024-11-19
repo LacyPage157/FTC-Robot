@@ -69,7 +69,7 @@ public class ColorLocator extends LinearOpMode
     //  applied to the drive motors to correct the error.
     //  Drive = Error * Gain    Make these values smaller for smoother control, or larger for a more aggressive response.
     final double SPEED_GAIN =   0.02 ;   //  Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
-    final double TURN_GAIN  =   0.01 ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
+    final double TURN_GAIN  =   0.1 ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
 
     final double MAX_AUTO_SPEED = 0.5;   //  Clip the approach speed to this max value (adjust for your robot)
     final double MAX_AUTO_TURN  = 0.25;  //  Clip the turn speed to this max value (adjust for your robot)
@@ -194,12 +194,11 @@ public class ColorLocator extends LinearOpMode
             {
                 RotatedRect boxFit = b.getBoxFit();
                 telemetry.addLine(String.format("%5d  %4.2f   %5.2f  (%3d,%3d)",
-                          b.getContourArea(), b.getDensity(), b.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y));
-                          int red = 0;
-                          int blue = 1;
-                          int yellow = 2;
-                          int green = 3; // Dont redeclare everytime, move this up a couple lines for initialzation.
-
+                    b.getContourArea(), b.getDensity(), b.getAspectRatio(), (int) boxFit.center.x, (int) boxFit.center.y));
+                        
+                    double blobXPos = (boxFit.center.x - 160) / 160; // normalizes the left side to -1, middle to 0, and right side to 1
+                    
+                    
                       /*First, create variables that are changable for which team we are -- Ie. Which color we are looking for.
                         We will always look for yellow, (red and blue changes depending on team).  Center our
                         robot so that we are looking right at the boxFit.centerX. Drive to sample. Work with Niko to copy code so that intake 
@@ -208,6 +207,11 @@ public class ColorLocator extends LinearOpMode
                       */
 
             }
+            
+            double  headingError = blobXPos;
+                // Use the speed and turn "gains" to calculate how we want the robot to move.  Clip it to the maximum
+            turn  = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN); //THISSSSSSSS
+            moveRobot(0.1,turn);
         }
     }
         public void moveRobot(double x, double yaw) {
@@ -248,59 +252,11 @@ public class ColorLocator extends LinearOpMode
         aprilTag.setDecimation(dec);
     }
 
-    private void initAprilTag() {
-
-        // Create the AprilTag processor the easy way.
-        aprilTag = AprilTagProcessor.easyCreateWithDefaults();
-
-        // Create the vision portal the easy way.
-        if (USE_WEBCAM) {
-            visionPortal = VisionPortal.easyCreateWithDefaults(
-                hardwareMap.get(WebcamName.class, "Webcam 1"), aprilTag);
-        } else {
-            visionPortal = VisionPortal.easyCreateWithDefaults(
-                BuiltinCameraDirection.BACK, aprilTag);
-        }
-
-    }   // end method initAprilTag()
     /*
      Manually set the camera gain and exposure.
      This can only be called AFTER calling initAprilTag(), and only works for Webcams;
     */
-    private void    setManualExposure(int exposureMS, int gain) {
-        // Wait for the camera to be open, then use the controls
 
-        if (visionPortal == null) {
-            return;
-        }
-
-        // Make sure camera is streaming before we try to set the exposure controls
-        if (visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
-            telemetry.addData("Camera", "Waiting");
-            telemetry.update();
-            while (!isStopRequested() && (visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING)) {
-                sleep(20);
-            }
-            telemetry.addData("Camera", "Ready");
-            telemetry.update();
-        }
-
-        // Set camera controls unless we are stopping.
-        if (!isStopRequested())
-        {
-            ExposureControl exposureControl = visionPortal.getCameraControl(ExposureControl.class);
-            if (exposureControl.getMode() != ExposureControl.Mode.Manual) {
-                exposureControl.setMode(ExposureControl.Mode.Manual);
-                sleep(50);
-            }
-            exposureControl.setExposure((long)exposureMS, TimeUnit.MILLISECONDS);
-            sleep(20);
-            GainControl gainControl = visionPortal.getCameraControl(GainControl.class);
-            gainControl.setGain(gain);
-            sleep(20);
-            telemetry.addData("Camera", "Ready");
-            telemetry.update();
-        }
     }
         
 
