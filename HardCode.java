@@ -100,10 +100,6 @@ public class HardCode extends LinearOpMode
         runOpMode();
 
 
-
-
-
-        
     }
 
         public void moveRobot(double x, double yaw) {

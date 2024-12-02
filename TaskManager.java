@@ -29,7 +29,7 @@ public class TaskManager {
         teamRed = x;
     }
 
-    public static void main(int phase){
+    public void main(int phase){
 
         switch(phase){
             case 0:
@@ -67,54 +67,4 @@ public class TaskManager {
         }
         telemetry.update();
         }
-
-    public static void main(){
-
-        switch(this.phase){
-            case 0:
-                ColorLocator.runOpMode();
-                telemetry.addData("Status","ColorLocator.java");
-                break;
-
-            case 1:
-                AprilTagRed.runOpMode(); //NOTE: AprilTagRed is the same as AprilTagBlue, as such we will use RED as a universal.
-                AprilTagRed.setDecimation(1);
-                telemetry.addData("Status","AprilTagRed.java");
-                break;
-
-            case 2:
-             //FOR NOW -1 -- Later will implement a more rigid system for what we are trying to look for.
-                Orientate.runOpMode();
-                telemetry.addData("Status","Orientate.java");
-                break;
-            case 3:
-                HardCode.runOpMode();
-                telemetry.addData("Status","HardCode.java");
-                break;
-
-///Probably reset here. 
-//Run hard code after 
-
-            default:
-                telemetry.addData("Status","Error:DefaultCaseAtPhaseUndefined");
-                break;
-
-        }
-        telemetry.update();
-
-
-
-
-    }
-
-
-
-
-
-
-
-    }
-
-
-
-
+}
