@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.util;
 import com.qualcomm.robotcore.hardware.Servo;
 
 
@@ -65,6 +66,7 @@ public class HardCode extends LinearOpMode
         rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         
         waitForStart();
+        targetRotations = DESIRED_DISTANCE/wheelCircumference;
         
 
         while(opModeIsActive()) {
