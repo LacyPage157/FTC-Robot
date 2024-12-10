@@ -257,5 +257,48 @@ public class AutoSpecimen extends LinearOpMode
         }
     }
 
+    
+    public void gyroDrive(double targetAngle, double targetSpeed, int direction) {
+        //For use with other functions, but lets us use the gyro to keep the robot on a certain heading
+        // it's proportional, so if for instance, a robot hits us, this will account for that, and
+        // correct the robot's heading.  It's not smart enough to oversteer to make sure we're on the exact
+        // same plain, but it's good enough for our use case since people shouldn't hit us in auton
+        leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        // LeftBottom.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        // RightTop.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        double LeftPower = 0;
+        double RightPower = 0;
+        int Direction = -direction;
+        double diff = -getError(targetAngle);
+        // Play with this value for different sensitivities depending on different speeds
+        double PVal = 15/targetSpeed;
+        if(Direction == -1){
+            //if we're traveling backwards, we want to add the difference to the opposite as we
+            // would if we traveled forward
+            //We're getting the targetSpeed, and adding the (difference/PVal)
+            //The PVal is decided by dividing 15 (which is an arbitrary value determined by robot)
+            //  by the target speed.  It was played around with, and decided on after testing.
+            // By including a second method of tuning our speed changes, we can have a more,
+            // or less, sensitive proportional drive depending not just on the error of our heading,
+            // but depending on our target speed as well.  This means when we're traveling fast,
+            // we change our values more, because it's actually a smaller percentage of it's overall
+            // speed.  In contrast, while driving slowly, we make smaller speed changes.
+            LeftPower = Direction*(targetSpeed+diff/PVal);
+            RightPower = Direction*(targetSpeed-diff/PVal);
+        }else{
+            //same as above, but opposite
+            LeftPower = Direction*(targetSpeed-diff/PVal);
+            RightPower = Direction*(targetSpeed+diff/PVal);
+        }
+        //Make sure the powers are between 1 and -1.  This doesn't do much, other than ensure
+        // stability of the code, and making sure it doesn't crash for a weird reason
+        LeftTop.setPower(Range.clip(LeftPower, -1, 1));
+        LeftBottom.setPower(Range.clip(LeftPower, -1, 1));
+        RightTop.setPower(Range.clip(RightPower, -1, 1));
+        RightBottom.setPower(Range.clip(RightPower, -1, 1));
+    }
+
 
     }
