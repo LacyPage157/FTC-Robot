@@ -61,6 +61,8 @@ public class AutoSpecimen extends LinearOpMode
     /* A number in degrees that the triggers can adjust the arm position by */
     final double FUDGE_FACTOR = 15 * ARM_TICKS_PER_DEGREE;
 
+    //DOWN
+
     /* Variables that are used to set the arm to a specific position */
     double armPosition = (int)ARM_COLLAPSED_INTO_ROBOT;
     double armPositionFudgeFactor;
@@ -239,15 +241,13 @@ public class AutoSpecimen extends LinearOpMode
         if (opModeIsActive() ) {
             //make sure that the encoder on the front left motor (which, stupidly, is the only motor
             //we use for distance in this function) is reset to 0
-            LeftTop.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            LeftTop.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            LeftBottom.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            RightTop.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            RightBottom.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             //find the amount of encoder ticks to travel based off of the Inches var
-            target = LeftTop.getCurrentPosition() + (int) (Inches * CountsPerInch * direction);
+            target = leftDrive.getCurrentPosition() + (int) (Inches * CountsPerInch * direction);
             //while the opmode is still running, and we're not at our target yet, and we haven't timed out
-            while(opModeIsActive() && notAtTarget && Math.abs(target) - Math.abs(LeftTop.getCurrentPosition()) > 25
+            while(opModeIsActive() && notAtTarget && Math.abs(target) - Math.abs(leftDrive.getCurrentPosition()) > 25
                     && (startTime + timeout > runtime.seconds())) {
                 //use gyrodrive to set power to the motors.  We have the Heading Var decied earlier,
                 // and speed and direction change base off of speed and direciton given by the user
@@ -294,10 +294,8 @@ public class AutoSpecimen extends LinearOpMode
         }
         //Make sure the powers are between 1 and -1.  This doesn't do much, other than ensure
         // stability of the code, and making sure it doesn't crash for a weird reason
-        LeftTop.setPower(Range.clip(LeftPower, -1, 1));
-        LeftBottom.setPower(Range.clip(LeftPower, -1, 1));
-        RightTop.setPower(Range.clip(RightPower, -1, 1));
-        RightBottom.setPower(Range.clip(RightPower, -1, 1));
+        leftDrive.setPower(Range.clip(LeftPower, -1, 1));
+        rightDrive.setPower(Range.clip(RightPower, -1, 1));
     }
 
 
