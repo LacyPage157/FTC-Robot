@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode; 
 
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -159,8 +159,8 @@ public class AutoSpecimen extends LinearOpMode
         // Now use these simple methods to extract each angle
         // (Java type double) from the object you just created:
         double Yaw   = robotOrientation.getYaw(AngleUnit.DEGREES); //NOTE: HEADING IS YAW!!!! THEY ARE THE SAME THING!!! 
-        double Pitch = robotOrientation.getPitch(AngleUnit.DEGREES);
-        double Roll  = robotOrientation.getRoll(AngleUnit.DEGREES);
+        double Pitch = robotOrientation.getPitch(AngleUnit.DEGREES); 
+        double Roll  = robotOrientation.getRoll(AngleUnit.DEGREES); 
 
         AngularVelocity myRobotAngularVelocity;
 
