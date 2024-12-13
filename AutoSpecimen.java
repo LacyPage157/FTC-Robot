@@ -216,9 +216,12 @@ public class AutoSpecimen extends LinearOpMode
 
         // public void encoderDriveSmooth(double speed, double Inches, int direction, double heading, double timeout) { 
 
-        encoderDriveSmooth(5.0,24.0,1,0,3000); //move forward 24 inches
+        encoderDriveSmooth(5.0,24.0,forward,0,3000); //move forward 24 inches
         telemetry.addData("Byleth","Byleth is cool");
         telemetry.update();
+        if (!leftDrive.isBusy()){
+            encoderDriveSimple(0.5,24.0,forward);
+        }
 
         // encoderDriveSmooth(5.0,24.0,-1,0,5); //move backward 24 inches
 
@@ -273,11 +276,16 @@ public class AutoSpecimen extends LinearOpMode
             //make sure that the encoder on the front left motor (which, stupidly, is the only motor
             //we use for distance in this function) is reset to 0
             leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            //rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            //leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            //rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             //find the amount of encoder ticks to travel based off of the Inches var
             //target = leftDrive.getCurrentPosition() + (int) (Inches * CountsPerInch * direction);
             target = leftDrive.getCurrentPosition() + (int) (Inches * CountsPerInch * direction);
+            //leftDrive.setTargetPosition(target);
+            //rightDrive.setTargetPosition(target);
             //while the opmode is still running, and we're not at our target yet, and we haven't timed out
             telemetry.addData("TargetOne", Inches);
             telemetry.addData("TargetTwo", CountsPerInch);
@@ -317,6 +325,9 @@ public class AutoSpecimen extends LinearOpMode
                 if (Math.abs(target) == Math.abs(leftDrive.getCurrentPosition()) || Math.abs(target) < Math.abs(leftDrive.getCurrentPosition())){
                     notAtTarget = false;
                 }
+                // if (!((leftDrive.isBusy()) || (rightDrive.isBusy()))){
+                //     notAtTarget = false;
+                // }
                 
                 
             }
@@ -345,8 +356,9 @@ public class AutoSpecimen extends LinearOpMode
             leftDrive.setTargetPosition(Inches*CountsPerInch);
             rightDrive.setTargetPosition(Inches*CountsPerInch);
 
-            leftDrive.setPower(speed);
-            rightDrive.setPower(speed);
+            leftDrive.setPower(Range.clip(speed, -1, 1));
+            rightDrive.setPower(Range.clip(speed, -1, 1));
+            
 
             while (leftDrive.isBusy() || leftDrive.isBusy()){
 
@@ -374,8 +386,8 @@ public class AutoSpecimen extends LinearOpMode
         // correct the robot's heading.  It's not smart enough to oversteer to make sure we're on the exact
         // same plain, but it's good enough for our use case since people shouldn't hit us in auton
         leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        // LeftBottom.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        // RightTop.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        // leftDrivesetMode(DcMotor.RunMode.RUN_TO_POSITION);
+        // rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION;
         rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         double LeftPower = 0;
