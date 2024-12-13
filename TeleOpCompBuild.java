@@ -178,17 +178,17 @@ public class TeleOpCompBuild extends LinearOpMode {
             forward = -gamepad2.left_stick_y;
             rotate  = gamepad2.right_stick_x;
             
-            if(gamepad2.x) {
-                HardCode.rotateRobot(90);
-            }
+            // if(gamepad2.x) {
+            //     HardCode.rotateRobot(90);
+            // }
             
-            if(gamepad2.b) {
-                HardCode.rotateRobot(-90);
-            }
+            // if(gamepad2.b) {
+            //     HardCode.rotateRobot(-90);
+            // }
             
-            if(gamepad2.a) {
-                HardCode.rotateRobot(180);
-            }
+            // if(gamepad2.a) {
+            //     HardCode.rotateRobot(180);
+            // }
 
 
             /* Here we "mix" the input channels together to find the power to apply to each motor.

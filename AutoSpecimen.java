@@ -72,15 +72,15 @@ public class AutoSpecimen extends LinearOpMode
     double armPosition = (int)ARM_COLLAPSED_INTO_ROBOT;
     double armPositionFudgeFactor;
 
-    double CountsPerRev = 28; // number of encoder ticks per rotation of the bare motor
-    double GearRatio = 250047.0 / 4913.0; // This is the exact gear ratio of the 50.9:1 Yellow Jacket gearbox
+    double CountsPerRev = 1425.059; // number of encoder ticks per rotation of the bare motor
+    // 28* (250047.0 / 4913.0) // This is the exact gear ratio of the 50.9:1 Yellow Jacket gearbox
     double WheelDiameterInches = 3.77953;     // For figuring out circumference
-    double CountsPerInch = ((CountsPerRev / ((WheelDiameterInches * 3.1415926535))/GearRatio)); 
+    double CountsPerInch = ((CountsPerRev / (WheelDiameterInches * 3.1415926535))); 
 
     //Navigation basic variables
     public double turningSpeed = .4;
-    public int forward = -1;
-    public int reverse = 1;
+    public int forward = 1;
+    public int reverse = -1;
     public double left;
     public double right;
     public double rotate;
@@ -92,6 +92,8 @@ public class AutoSpecimen extends LinearOpMode
 
     double programStartOrientation;
     public double stayOnHeading = 84.17; //Arbitrary number decided more or less...
+
+    public YawPitchRollAngles robotOrientation;
         
 
     public ElapsedTime runtime = new ElapsedTime(); //This will give us the time since we have started, very useful for timing things.
@@ -116,8 +118,8 @@ public class AutoSpecimen extends LinearOpMode
 
         /* Most skid-steer/differential drive robots require reversing one motor to drive forward.
         for this robot, we reverse the right motor.*/
-        leftDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightDrive.setDirection(DcMotor.Direction.FORWARD);
 
 
         /* Setting zeroPowerBehavior to BRAKE enables a "brake mode". This causes the motor to slow down
@@ -162,7 +164,7 @@ public class AutoSpecimen extends LinearOpMode
         );
         
 
-        YawPitchRollAngles robotOrientation;
+        
         robotOrientation = imu.getRobotYawPitchRollAngles();
 
         // Now use these simple methods to extract each angle
@@ -241,6 +243,8 @@ public class AutoSpecimen extends LinearOpMode
     public double getHeading(){
         //returns the Yaw -- Makes it easier so I can just refrence 
         //heading as just that instead of having to think of Yaw, Pitch, Roll etc...
+        robotOrientation = imu.getRobotYawPitchRollAngles();
+        Yaw   = robotOrientation.getYaw(AngleUnit.DEGREES);
         return Yaw;
     }
 
@@ -269,21 +273,21 @@ public class AutoSpecimen extends LinearOpMode
             //make sure that the encoder on the front left motor (which, stupidly, is the only motor
             //we use for distance in this function) is reset to 0
             leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             //find the amount of encoder ticks to travel based off of the Inches var
             //target = leftDrive.getCurrentPosition() + (int) (Inches * CountsPerInch * direction);
-            target = leftDrive.getCurrentPosition() + (int) (Inches * 10 * direction);
+            target = leftDrive.getCurrentPosition() + (int) (Inches * CountsPerInch * direction);
             //while the opmode is still running, and we're not at our target yet, and we haven't timed out
             telemetry.addData("TargetOne", Inches);
             telemetry.addData("TargetTwo", CountsPerInch);
             telemetry.addData("TargetThree", direction);
             
             
-            telemetry.addData("Target:", notAtTarget);
+            telemetry.addData("NotAtTarget:", notAtTarget);
             
             
-            telemetry.addData("Target:",Math.abs(target) - Math.abs(leftDrive.getCurrentPosition()) > 25);
+            telemetry.addData("Target-Current:",Math.abs(target) - Math.abs(leftDrive.getCurrentPosition()) > 25);
             telemetry.addData("CurrentPos", Math.abs(leftDrive.getCurrentPosition()));
             telemetry.addData("Target pos",Math.abs(target));
             
@@ -310,27 +314,61 @@ public class AutoSpecimen extends LinearOpMode
                 telemetry.addData("CurrentPos", leftDrive.getCurrentPosition());
                 telemetry.addData("Target pos",Math.abs(target));
                 telemetry.update();
-                if (Math.abs(target) == Math.abs(leftDrive.getCurrentPosition())){
+                if (Math.abs(target) == Math.abs(leftDrive.getCurrentPosition()) || Math.abs(target) < Math.abs(leftDrive.getCurrentPosition())){
                     notAtTarget = false;
                 }
                 
                 
             }
-            
+
+
+            rightDrive.setPower(0);
+            leftDrive.setPower(0);
             telemetry.addData("CurrentPos", leftDrive.getCurrentPosition());
             telemetry.addData("Target pos",Math.abs(target));
+            telemetry.addLine("We should have reached our target position...");
             telemetry.update();
-            sleep(6000);
+            sleep(10000);
             
         }
+    }
+
+    public void SimpleEncoderDrive(double speed, double Inches, double direction){
+
+        if (opModeIsActive() ) {
+
+        
+            leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            leftDrive.setTargetPosition(Inches*CountsPerInch);
+            rightDrive.setTargetPosition(Inches*CountsPerInch);
+
+            leftDrive.setPower(speed);
+            rightDrive.setPower(speed);
+
+            while (leftDrive.isBusy() || leftDrive.isBusy()){
+
+                telemetry.addData("Running Distance:", Inches);
+                telemetry.update();
+
+            }
+            leftDrive.setPower(0);
+            rightDrive.setPower(0);
+            telemetry.addData("Ran Distance:", Inches);
+            telemetry.update();
+
+        }
+
     }
 
     
     public void gyroDrive(double targetAngle, double targetSpeed, int direction) {
         
         telemetry.addLine("GyroRunning");
-        telemetry.update();
-        sleep(1000);
+        //telemetry.update();
+        //sleep(1000);
         //For use with other functions, but lets us use the gyro to keep the robot on a certain heading
         // it's proportional, so if for instance, a robot hits us, this will account for that, and
         // correct the robot's heading.  It's not smart enough to oversteer to make sure we're on the exact
