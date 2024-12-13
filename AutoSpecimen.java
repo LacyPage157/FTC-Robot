@@ -1,7 +1,9 @@
-package org.firstinspires.ftc.teamcode; 
+package org.firstinspires.ftc.teamcode;
 
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import java.lang.annotation.Target;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -34,6 +36,7 @@ public class AutoSpecimen extends LinearOpMode
     public DcMotor  armTwo    = null; //the arm motor
     public CRServo  intake      = null; //the active intake servo
     public Servo    wrist       = null; //the wrist servo
+    public IMU imu;
     //End Hardware Decleration Section
 
 
@@ -76,12 +79,16 @@ public class AutoSpecimen extends LinearOpMode
 
     //Navigation basic variables
     public double turningSpeed = .4;
-    public int forward = 1;
-    public int reverse = -1;
+    public int forward = -1;
+    public int reverse = 1;
     public double left;
     public double right;
     public double rotate;
     public double max;
+
+    double Yaw; //NOTE: HEADING IS YAW!!!! THEY ARE THE SAME THING!!! 
+    double Pitch;
+    double Roll;
 
     double programStartOrientation;
     public double stayOnHeading = 84.17; //Arbitrary number decided more or less...
@@ -105,10 +112,11 @@ public class AutoSpecimen extends LinearOpMode
         rightDrive = hardwareMap.get(DcMotor.class, "leftMotor"); //the right drivetrain motor
         armMotor   = hardwareMap.get(DcMotor.class, "armOne"); //the arm main motor
         armTwo = hardwareMap.get(DcMotor.class, "armTwo"); //the sub arm motor
+        imu = hardwareMap.get(IMU.class, "imu");
 
         /* Most skid-steer/differential drive robots require reversing one motor to drive forward.
         for this robot, we reverse the right motor.*/
-        leftDrive.setDirection(DcMotor.Direction.FORWARD);
+        leftDrive.setDirection(DcMotor.Direction.REVERSE);
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
 
 
@@ -152,15 +160,16 @@ public class AutoSpecimen extends LinearOpMode
             ) //Make sure this is accurate ^ !!!!
         )
         );
+        
 
         YawPitchRollAngles robotOrientation;
         robotOrientation = imu.getRobotYawPitchRollAngles();
 
         // Now use these simple methods to extract each angle
         // (Java type double) from the object you just created:
-        double Yaw   = robotOrientation.getYaw(AngleUnit.DEGREES); //NOTE: HEADING IS YAW!!!! THEY ARE THE SAME THING!!! 
-        double Pitch = robotOrientation.getPitch(AngleUnit.DEGREES); 
-        double Roll  = robotOrientation.getRoll(AngleUnit.DEGREES); 
+        Yaw   = robotOrientation.getYaw(AngleUnit.DEGREES); //NOTE: HEADING IS YAW!!!! THEY ARE THE SAME THING!!! 
+        Pitch = robotOrientation.getPitch(AngleUnit.DEGREES);
+        Roll  = robotOrientation.getRoll(AngleUnit.DEGREES);
 
         AngularVelocity myRobotAngularVelocity;
 
@@ -199,7 +208,21 @@ public class AutoSpecimen extends LinearOpMode
 
 
 
+
+
         //Left empty on purpose
+
+        // public void encoderDriveSmooth(double speed, double Inches, int direction, double heading, double timeout) { 
+
+        encoderDriveSmooth(5.0,24.0,1,0,3000); //move forward 24 inches
+        telemetry.addData("Byleth","Byleth is cool");
+        telemetry.update();
+
+        // encoderDriveSmooth(5.0,24.0,-1,0,5); //move backward 24 inches
+
+        // encoderDriveSmooth(25.0,24,1,130,5); //heading test
+
+        
 
 
 
@@ -241,26 +264,73 @@ public class AutoSpecimen extends LinearOpMode
         }
         double target;
         if (opModeIsActive() ) {
+            telemetry.addLine("Testing While Loop Encoder");
+            telemetry.update();
             //make sure that the encoder on the front left motor (which, stupidly, is the only motor
             //we use for distance in this function) is reset to 0
             leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             //find the amount of encoder ticks to travel based off of the Inches var
-            target = leftDrive.getCurrentPosition() + (int) (Inches * CountsPerInch * direction);
+            //target = leftDrive.getCurrentPosition() + (int) (Inches * CountsPerInch * direction);
+            target = leftDrive.getCurrentPosition() + (int) (Inches * 10 * direction);
             //while the opmode is still running, and we're not at our target yet, and we haven't timed out
-            while(opModeIsActive() && notAtTarget && Math.abs(target) - Math.abs(leftDrive.getCurrentPosition()) > 25
-                    && (startTime + timeout > runtime.seconds())) {
+            telemetry.addData("TargetOne", Inches);
+            telemetry.addData("TargetTwo", CountsPerInch);
+            telemetry.addData("TargetThree", direction);
+            
+            
+            telemetry.addData("Target:", notAtTarget);
+            
+            
+            telemetry.addData("Target:",Math.abs(target) - Math.abs(leftDrive.getCurrentPosition()) > 25);
+            telemetry.addData("CurrentPos", Math.abs(leftDrive.getCurrentPosition()));
+            telemetry.addData("Target pos",Math.abs(target));
+            
+            telemetry.addData("StartTime:",startTime);
+            telemetry.addData("Timeout:",timeout);
+            telemetry.addData("runTime:",runtime.seconds());
+            if((startTime + timeout > runtime.seconds()))
+            {
+                telemetry.addLine("StartTimeOut Condition true");
+            }
+            
+            telemetry.addData("Is while true?", opModeIsActive() && notAtTarget && Math.abs(target) - Math.abs(leftDrive.getCurrentPosition()) > 25
+                    && (startTime + timeout > runtime.seconds()));
+            
+            telemetry.update();
+            sleep(1000);
+            while(opModeIsActive() && notAtTarget && Math.abs(target) - Math.abs(leftDrive.getCurrentPosition()) > 25) {
                 //use gyrodrive to set power to the motors.  We have the Heading Var decied earlier,
                 // and speed and direction change base off of speed and direciton given by the user
+                
+
                 gyroDrive(Heading, speed, direction);
+                telemetry.addData("runTime:","Not runtime while loop active");
+                telemetry.addData("CurrentPos", leftDrive.getCurrentPosition());
+                telemetry.addData("Target pos",Math.abs(target));
+                telemetry.update();
+                if (Math.abs(target) == Math.abs(leftDrive.getCurrentPosition())){
+                    notAtTarget = false;
+                }
+                
                 
             }
+            
+            telemetry.addData("CurrentPos", leftDrive.getCurrentPosition());
+            telemetry.addData("Target pos",Math.abs(target));
+            telemetry.update();
+            sleep(6000);
+            
         }
     }
 
     
     public void gyroDrive(double targetAngle, double targetSpeed, int direction) {
+        
+        telemetry.addLine("GyroRunning");
+        telemetry.update();
+        sleep(1000);
         //For use with other functions, but lets us use the gyro to keep the robot on a certain heading
         // it's proportional, so if for instance, a robot hits us, this will account for that, and
         // correct the robot's heading.  It's not smart enough to oversteer to make sure we're on the exact
@@ -298,6 +368,16 @@ public class AutoSpecimen extends LinearOpMode
         // stability of the code, and making sure it doesn't crash for a weird reason
         leftDrive.setPower(Range.clip(LeftPower, -1, 1));
         rightDrive.setPower(Range.clip(RightPower, -1, 1));
+    }
+
+    public double getError(double targetAngle) {
+        //This function compares the current heading to the target heading, and returns the error
+        double robotError;
+        // calculate error in -179 to +180 range  (
+        robotError = targetAngle - getHeading();
+        while (robotError > 180)  robotError -= 360;
+        while (robotError <= -180) robotError += 360;
+        return robotError;
     }
 
 
