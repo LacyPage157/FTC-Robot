@@ -253,11 +253,13 @@ public class AutoSpecimen extends LinearOpMode
 
 
     //This section needs work! 
+    //Note: Someone will have to clean up these nasty telemetry statements at some point and comments
     public void encoderDriveSmooth(double speed, double Inches, int direction, double heading, double timeout) { 
-        /**Speed is how fast we want our robot to go to a set target.  
-         * Inches is the distance, in Inches. 
-         * Direction should be filled with the forward constant
-         * Heading is the degrees we should be going to. For 
+        /**Speed is how fast we want our robot to go to a set target. NOTE: THIS SHOULD BE A VALUE NORMALIZED 
+         * Inches is the distance, in Inches. Positive.
+         * Direction should be filled with the forward constant -- Use forward or reverse. 
+         * Heading is the degrees we should be going to. For staying straight, use current heading.
+         * Timeout will be used at a later date once it is worked out.
         */
         double startTime = runtime.seconds();
         double Heading = 0;
@@ -280,9 +282,8 @@ public class AutoSpecimen extends LinearOpMode
             leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             //leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            //rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            //rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION); //Note, this will be used later. Changes it so that the encoder runs a certain amount of ticks. 
             //find the amount of encoder ticks to travel based off of the Inches var
-            //target = leftDrive.getCurrentPosition() + (int) (Inches * CountsPerInch * direction);
             target = leftDrive.getCurrentPosition() + (int) (Inches * CountsPerInch * direction);
             //leftDrive.setTargetPosition(target);
             //rightDrive.setTargetPosition(target);
@@ -312,13 +313,13 @@ public class AutoSpecimen extends LinearOpMode
             
             telemetry.update();
             sleep(1000);
-            while(opModeIsActive() && notAtTarget && Math.abs(target) - Math.abs(leftDrive.getCurrentPosition()) > 25) {
+            while(opModeIsActive() && notAtTarget && (Math.abs(target) - Math.abs(leftDrive.getCurrentPosition()) > 25 ) && (startTime + timeout > runtime.seconds())) {
                 //use gyrodrive to set power to the motors.  We have the Heading Var decied earlier,
                 // and speed and direction change base off of speed and direciton given by the user
                 
 
                 gyroDrive(Heading, speed, direction);
-                telemetry.addData("runTime:","Not runtime while loop active");
+                //telemetry.addData("While Loop Active?:","Not runtime while loop active");
                 telemetry.addData("CurrentPos", leftDrive.getCurrentPosition());
                 telemetry.addData("Target pos",Math.abs(target));
                 telemetry.update();
@@ -352,7 +353,7 @@ public class AutoSpecimen extends LinearOpMode
             leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION); //Basically, run with encoder for a set distance. 
             leftDrive.setTargetPosition(Inches*CountsPerInch);
             rightDrive.setTargetPosition(Inches*CountsPerInch);
 
