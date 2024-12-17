@@ -377,7 +377,7 @@ public class AutoSpecimen extends LinearOpMode
             while (leftDrive.isBusy() || leftDrive.isBusy()){
 
                 double error = 1-((double)rightDrive.getCurrentPosition())/((double)rightDrive.getTargetPosition());
-                double targetVelocity = ((-1/Math.pow(3, (9*error)))+1)*speed*1000; //Confused? Open desmos and look from 0 to 1, get rid of * 1000 and speed
+                double targetVelocity = ((-1/Math.pow(3, ((18*(1.1-speed))*error)))+1)*speed*1000; //Confused? Open desmos and look from 0 to 1, get rid of * 1000 and speed
                 ((DcMotorEx)(rightDrive)).setVelocity(targetVelocity);
                 ((DcMotorEx)(leftDrive)).setVelocity(targetVelocity);
                 telemetry.addData("Running Distance:", Inches);
