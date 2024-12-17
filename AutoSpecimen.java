@@ -161,7 +161,7 @@ public class AutoSpecimen extends LinearOpMode
         new IMU.Parameters(
             new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.UP, 
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD //This decides axis relative to our Robot....
+                RevHubOrientationOnRobot.UsbFacingDirection.LEFT //This decides axis relative to our Robot....
             ) //Make sure this is accurate ^ !!!!
         )
         );
@@ -223,13 +223,8 @@ public class AutoSpecimen extends LinearOpMode
         telemetry.addData("Byleth","Byleth is cool");
         telemetry.update();
         if (!leftDrive.isBusy()){
-            SimpleEncoderDrive(0.5,48.0,forward);
+            SimpleEncoderDrive(0.5,48.0,forward); //Move forward 48 inches at half speed.
         }
-
-        // encoderDriveSmooth(5.0,24.0,-1,0,5); //move backward 24 inches
-
-        // encoderDriveSmooth(25.0,24,1,130,5); //heading test
-
         
 
 
@@ -352,20 +347,17 @@ public class AutoSpecimen extends LinearOpMode
 
         if (opModeIsActive() ) {
             
-            double targetSpeed = 0;
-
-        
             leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            leftDrive.setTargetPosition((int)(Inches*CountsPerInch));
-            rightDrive.setTargetPosition((int)(Inches*CountsPerInch));
+            leftDrive.setTargetPosition((int)(Inches*CountsPerInch*direction));
+            rightDrive.setTargetPosition((int)(Inches*CountsPerInch*direction));
             leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION); //Basically, run with encoder for a set distance. 
+            rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION); //Basically, run with encoder for a set distance that we set above 
             leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             
             if (Inches > 1){
-                rightDrive.setPower(0.1);
+                rightDrive.setPower(0.1); //Basically, give the motors a small start so that the while loop can activate
                 leftDrive.setPower(0.1);
                 sleep(100);
             }
@@ -376,10 +368,13 @@ public class AutoSpecimen extends LinearOpMode
 
             while (leftDrive.isBusy() || leftDrive.isBusy()){
 
-                double error = 1-((double)rightDrive.getCurrentPosition())/((double)rightDrive.getTargetPosition());
-                double targetVelocity = ((-1/Math.pow(3, ((18*(1.1-speed))*error)))+1)*speed*1000; //Confused? Open desmos and look from 0 to 1, get rid of * 1000 and speed
+                double error = 1-((double)rightDrive.getCurrentPosition())/((double)rightDrive.getTargetPosition());//When I say error, I just mean 
+                //1 - the normalized value so that starting distance is one, ending distance = 0. ^^ MATHHH
+                double targetVelocity = ((-1/Math.pow(3, ((18*(1.1-speed))*error)))+1)*speed*1000; //Confused? Open desmos and look from 0 to 1, get rid of * 1000 and speed and stuff. Just a velocity curve
+                
                 ((DcMotorEx)(rightDrive)).setVelocity(targetVelocity);
-                ((DcMotorEx)(leftDrive)).setVelocity(targetVelocity);
+                ((DcMotorEx)(leftDrive)).setVelocity(targetVelocity); //Type cast to the version of motor that can be used with PID velocity control while in RunToPosition; mode.
+                
                 telemetry.addData("Running Distance:", Inches);
                 telemetry.addData("targetPos",rightDrive.getTargetPosition());
                 telemetry.addData("currentPos",rightDrive.getCurrentPosition());
@@ -395,14 +390,14 @@ public class AutoSpecimen extends LinearOpMode
             // rightDrive.setPower(0.2*(-speed));
             // double temp = speed*4*100;
             // sleep((int)temp);
-            leftDrive.setPower(0);
+            leftDrive.setPower(0); //Once we are done; with the motors, make sure they are set to zero to eliminate close to 0 power sets.
             rightDrive.setPower(0);
             //leftDrive.setPower(0);
             //rightDrive.setPower(0);
             telemetry.addData("Ran Distance:", Inches);
             //telemetry.addData("LongSpeed",(int)temp);
             telemetry.update();
-            sleep(4000);
+            sleep(4000); //For testing purposes only
 
         }
 
