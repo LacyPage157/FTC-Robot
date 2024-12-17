@@ -255,7 +255,7 @@ public class AutoSpecimen extends LinearOpMode
     }
 
 
-    //This section needs work! 
+    //This section needs work! //NOTE -- THIS CODE IS LEGACY
     //Note: Someone will have to clean up these nasty telemetry statements at some point and comments
     public void encoderDriveSmooth(double speed, double Inches, int direction, double heading, double timeout) { 
         /**Speed is how fast we want our robot to go to a set target. NOTE: THIS SHOULD BE A VALUE NORMALIZED 
