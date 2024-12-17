@@ -119,7 +119,7 @@ public class AutoSpecimen extends LinearOpMode
         /* Most skid-steer/differential drive robots require reversing one motor to drive forward.
         for this robot, we reverse the right motor.*/
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightDrive.setDirection(DcMotor.Direction.REVERSE);
 
 
         /* Setting zeroPowerBehavior to BRAKE enables a "brake mode". This causes the motor to slow down
@@ -216,11 +216,11 @@ public class AutoSpecimen extends LinearOpMode
 
         // public void encoderDriveSmooth(double speed, double Inches, int direction, double heading, double timeout) { 
 
-        encoderDriveSmooth(5.0,24.0,forward,0,3000); //move forward 24 inches
+        //encoderDriveSmooth(5.0,24.0,forward,0,3000); //move forward 24 inches
         telemetry.addData("Byleth","Byleth is cool");
         telemetry.update();
         if (!leftDrive.isBusy()){
-            encoderDriveSimple(0.5,24.0,forward);
+            SimpleEncoderDrive(0.5,7.0,forward);
         }
 
         // encoderDriveSmooth(5.0,24.0,-1,0,5); //move backward 24 inches
@@ -354,8 +354,10 @@ public class AutoSpecimen extends LinearOpMode
             rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION); //Basically, run with encoder for a set distance. 
-            leftDrive.setTargetPosition(Inches*CountsPerInch);
-            rightDrive.setTargetPosition(Inches*CountsPerInch);
+            leftDrive.setTargetPosition((int)(Inches*CountsPerInch/3));
+            rightDrive.setTargetPosition((int)(Inches*CountsPerInch/3));
+            leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
             leftDrive.setPower(Range.clip(speed, -1, 1));
             rightDrive.setPower(Range.clip(speed, -1, 1));
@@ -365,12 +367,27 @@ public class AutoSpecimen extends LinearOpMode
 
                 telemetry.addData("Running Distance:", Inches);
                 telemetry.update();
+                telemetry.addData("targetPos",rightDrive.getTargetPosition());
+                telemetry.addData("currentPos",rightDrive.getCurrentPosition());
+                
+                    
+                    
+                
 
             }
+            telemetry.addLine("RAHHHHH BRAKING");
+            leftDrive.setPower(0.2*(-speed));
+            rightDrive.setPower(0.2*(-speed));
+            double temp = speed*4*100;
+            sleep((int)temp);
             leftDrive.setPower(0);
             rightDrive.setPower(0);
+            //leftDrive.setPower(0);
+            //rightDrive.setPower(0);
             telemetry.addData("Ran Distance:", Inches);
+            telemetry.addData("LongSpeed",(int)temp);
             telemetry.update();
+            sleep(2000);
 
         }
 
@@ -408,11 +425,11 @@ public class AutoSpecimen extends LinearOpMode
             // but depending on our target speed as well.  This means when we're traveling fast,
             // we change our values more, because it's actually a smaller percentage of it's overall
             // speed.  In contrast, while driving slowly, we make smaller speed changes.
-            LeftPower = Direction*(targetSpeed+diff/PVal);
+            LeftPower = Direction*(targetSpeed-diff/PVal);
             RightPower = Direction*(targetSpeed-diff/PVal);
         }else{
             //same as above, but opposite
-            LeftPower = Direction*(targetSpeed-diff/PVal);
+            LeftPower = Direction*(targetSpeed+diff/PVal);
             RightPower = Direction*(targetSpeed+diff/PVal);
         }
         //Make sure the powers are between 1 and -1.  This doesn't do much, other than ensure
