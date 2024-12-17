@@ -75,7 +75,7 @@ public class AutoSpecimen extends LinearOpMode
     double armPosition = (int)ARM_COLLAPSED_INTO_ROBOT;
     double armPositionFudgeFactor;
 
-    double CountsPerRev = 1425.059; // number of encoder ticks per rotation of the bare motor with down below
+    double CountsPerRev = 541; //mber of encoder ticks per rotation of the bare motor with down below
     // 28* (250047.0 / 4913.0) // This is the exact gear ratio of the 50.9:1 Yellow Jacket gearbox
     double WheelDiameterInches = 3.77953;     // For figuring out circumference
     double CountsPerInch = ((CountsPerRev / (WheelDiameterInches * 3.1415926535))); 
@@ -223,7 +223,7 @@ public class AutoSpecimen extends LinearOpMode
         telemetry.addData("Byleth","Byleth is cool");
         telemetry.update();
         if (!leftDrive.isBusy()){
-            SimpleEncoderDrive(0.5,24.0,forward);
+            SimpleEncoderDrive(0.5,48.0,forward);
         }
 
         // encoderDriveSmooth(5.0,24.0,-1,0,5); //move backward 24 inches
@@ -357,8 +357,8 @@ public class AutoSpecimen extends LinearOpMode
         
             leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            leftDrive.setTargetPosition((int)(Inches*CountsPerInch/3));
-            rightDrive.setTargetPosition((int)(Inches*CountsPerInch/3));
+            leftDrive.setTargetPosition((int)(Inches*CountsPerInch));
+            rightDrive.setTargetPosition((int)(Inches*CountsPerInch));
             leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION); //Basically, run with encoder for a set distance. 
             leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -367,6 +367,7 @@ public class AutoSpecimen extends LinearOpMode
             if (Inches > 1){
                 rightDrive.setPower(0.1);
                 leftDrive.setPower(0.1);
+                sleep(100);
             }
             else {
                 telemetry.addLine("Inches invalid, must be greater than 1!");
@@ -375,8 +376,8 @@ public class AutoSpecimen extends LinearOpMode
 
             while (leftDrive.isBusy() || leftDrive.isBusy()){
 
-                double error = leftDrive.getCurrentPosition()/leftDrive.getTargetPosition();
-                double targetVelocity = (Math.pow(-3, -20*error)+1)*speed*2000; //Confused? Open desmos and look from 0 to 1, get rid of * 1000 and speed
+                double error = 1-((double)rightDrive.getCurrentPosition())/((double)rightDrive.getTargetPosition());
+                double targetVelocity = ((-1/Math.pow(3, (9*error)))+1)*speed*1000; //Confused? Open desmos and look from 0 to 1, get rid of * 1000 and speed
                 ((DcMotorEx)(rightDrive)).setVelocity(targetVelocity);
                 ((DcMotorEx)(leftDrive)).setVelocity(targetVelocity);
                 telemetry.addData("Running Distance:", Inches);
@@ -384,6 +385,7 @@ public class AutoSpecimen extends LinearOpMode
                 telemetry.addData("currentPos",rightDrive.getCurrentPosition());
                 telemetry.addData("currentVelocity", ((DcMotorEx) rightDrive).getVelocity());
                 telemetry.addData("targetVelocity", targetVelocity);
+                telemetry.addData("error", error);
                 telemetry.update();
                 
 
@@ -398,7 +400,7 @@ public class AutoSpecimen extends LinearOpMode
             //leftDrive.setPower(0);
             //rightDrive.setPower(0);
             telemetry.addData("Ran Distance:", Inches);
-            telemetry.addData("LongSpeed",(int)temp);
+            //telemetry.addData("LongSpeed",(int)temp);
             telemetry.update();
             sleep(4000);
 
