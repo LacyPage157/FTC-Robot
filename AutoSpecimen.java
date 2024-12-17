@@ -201,20 +201,6 @@ public class AutoSpecimen extends LinearOpMode
 
         //We will build the rest of this once the other functions are made...
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         //Left empty on purpose
 
         // public void encoderDriveSmooth(double speed, double Inches, int direction, double heading, double timeout) { 
@@ -227,17 +213,6 @@ public class AutoSpecimen extends LinearOpMode
         }
         
 
-
-
-
-
-
-
-
-
-
-
-
         //We will build the rest of this once the other functions are made...
     }
 
@@ -245,102 +220,8 @@ public class AutoSpecimen extends LinearOpMode
         //returns the Yaw -- Makes it easier so I can just refrence 
         //heading as just that instead of having to think of Yaw, Pitch, Roll etc...
         robotOrientation = imu.getRobotYawPitchRollAngles();
-        Yaw   = robotOrientation.getYaw(AngleUnit.DEGREES);
+        Yaw = robotOrientation.getYaw(AngleUnit.DEGREES);
         return Yaw;
-    }
-
-
-    //This section needs work! //NOTE -- THIS CODE IS LEGACY
-    //Note: Someone will have to clean up these nasty telemetry statements at some point and comments
-    public void encoderDriveSmooth(double speed, double Inches, int direction, double heading, double timeout) { 
-        /**Speed is how fast we want our robot to go to a set target. NOTE: THIS SHOULD BE A VALUE NORMALIZED 
-         * Inches is the distance, in Inches. Positive.
-         * Direction should be filled with the forward constant -- Use forward or reverse. 
-         * Heading is the degrees we should be going to. For staying straight, use current heading.
-         * Timeout will be used at a later date once it is worked out.
-        */
-        double startTime = runtime.seconds();
-        double Heading = 0;
-        boolean notAtTarget = true;
-        //if we give a very very specific value for our heading, than we stay on our current path
-        //otherwise, we get use the gyroDrive to correct to our desired heading
-        if (heading == 84.17){
-            Heading = getHeading();
-        }else{
-            Heading = heading;
-        }
-        double target;
-        if (opModeIsActive() ) {
-            telemetry.addLine("Testing While Loop Encoder");
-            telemetry.update();
-            //make sure that the encoder on the front left motor (which, stupidly, is the only motor
-            //we use for distance in this function) is reset to 0
-            leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            //rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            //leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            //rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION); //Note, this will be used later. Changes it so that the encoder runs a certain amount of ticks. 
-            //find the amount of encoder ticks to travel based off of the Inches var
-            target = leftDrive.getCurrentPosition() + (int) (Inches * CountsPerInch * direction);
-            //leftDrive.setTargetPosition(target);
-            //rightDrive.setTargetPosition(target);
-            //while the opmode is still running, and we're not at our target yet, and we haven't timed out
-            telemetry.addData("TargetOne", Inches);
-            telemetry.addData("TargetTwo", CountsPerInch);
-            telemetry.addData("TargetThree", direction);
-            
-            
-            telemetry.addData("NotAtTarget:", notAtTarget);
-            
-            
-            telemetry.addData("Target-Current:",Math.abs(target) - Math.abs(leftDrive.getCurrentPosition()) > 25);
-            telemetry.addData("CurrentPos", Math.abs(leftDrive.getCurrentPosition()));
-            telemetry.addData("Target pos",Math.abs(target));
-            
-            telemetry.addData("StartTime:",startTime);
-            telemetry.addData("Timeout:",timeout);
-            telemetry.addData("runTime:",runtime.seconds());
-            if((startTime + timeout > runtime.seconds()))
-            {
-                telemetry.addLine("StartTimeOut Condition true");
-            }
-            
-            telemetry.addData("Is while true?", opModeIsActive() && notAtTarget && Math.abs(target) - Math.abs(leftDrive.getCurrentPosition()) > 25
-                    && (startTime + timeout > runtime.seconds()));
-            
-            telemetry.update();
-            sleep(1000);
-            while(opModeIsActive() && notAtTarget && (Math.abs(target) - Math.abs(leftDrive.getCurrentPosition()) > 25 ) && (startTime + timeout > runtime.seconds())) {
-                //use gyrodrive to set power to the motors.  We have the Heading Var decied earlier,
-                // and speed and direction change base off of speed and direciton given by the user
-                
-
-                gyroDrive(Heading, speed, direction);
-                //telemetry.addData("While Loop Active?:","Not runtime while loop active");
-                telemetry.addData("CurrentPos", leftDrive.getCurrentPosition());
-                telemetry.addData("Target pos",Math.abs(target));
-                telemetry.update();
-                if (Math.abs(target) == Math.abs(leftDrive.getCurrentPosition()) || Math.abs(target) < Math.abs(leftDrive.getCurrentPosition())){
-                    notAtTarget = false;
-                }
-                // if (!((leftDrive.isBusy()) || (rightDrive.isBusy()))){
-                //     notAtTarget = false;
-                // }
-                
-                
-            }
-
-
-            rightDrive.setPower(0);
-            leftDrive.setPower(0);
-            telemetry.addData("CurrentPos", leftDrive.getCurrentPosition());
-            telemetry.addData("Target pos",Math.abs(target));
-            telemetry.addLine("We should have reached our target position...");
-            telemetry.update();
-            sleep(10000);
-            
-        }
     }
 
     public void SimpleEncoderDrive(double speed, double Inches, double direction){
@@ -401,53 +282,6 @@ public class AutoSpecimen extends LinearOpMode
 
         }
 
-    }
-
-
-
-    
-    public void gyroDrive(double targetAngle, double targetSpeed, int direction) {
-        
-        telemetry.addLine("GyroRunning");
-        //telemetry.update();
-        //sleep(1000);
-        //For use with other functions, but lets us use the gyro to keep the robot on a certain heading
-        // it's proportional, so if for instance, a robot hits us, this will account for that, and
-        // correct the robot's heading.  It's not smart enough to oversteer to make sure we're on the exact
-        // same plain, but it's good enough for our use case since people shouldn't hit us in auton
-        leftDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        // leftDrivesetMode(DcMotor.RunMode.RUN_TO_POSITION);
-        // rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION;
-        rightDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        double LeftPower = 0;
-        double RightPower = 0;
-        int Direction = -direction;
-        double diff = -getError(targetAngle);
-        // Play with this value for different sensitivities depending on different speeds
-        double PVal = 15/targetSpeed;
-        if(Direction == -1){
-            //if we're traveling backwards, we want to add the difference to the opposite as we
-            // would if we traveled forward
-            //We're getting the targetSpeed, and adding the (difference/PVal)
-            //The PVal is decided by dividing 15 (which is an arbitrary value determined by robot)
-            //  by the target speed.  It was played around with, and decided on after testing.
-            // By including a second method of tuning our speed changes, we can have a more,
-            // or less, sensitive proportional drive depending not just on the error of our heading,
-            // but depending on our target speed as well.  This means when we're traveling fast,
-            // we change our values more, because it's actually a smaller percentage of it's overall
-            // speed.  In contrast, while driving slowly, we make smaller speed changes.
-            LeftPower = Direction*(targetSpeed-diff/PVal);
-            RightPower = Direction*(targetSpeed-diff/PVal);
-        }else{
-            //same as above, but opposite
-            LeftPower = Direction*(targetSpeed+diff/PVal);
-            RightPower = Direction*(targetSpeed+diff/PVal);
-        }
-        //Make sure the powers are between 1 and -1.  This doesn't do much, other than ensure
-        // stability of the code, and making sure it doesn't crash for a weird reason
-        leftDrive.setPower(Range.clip(LeftPower, -1, 1));
-        rightDrive.setPower(Range.clip(RightPower, -1, 1));
     }
 
     public double getError(double targetAngle) {
