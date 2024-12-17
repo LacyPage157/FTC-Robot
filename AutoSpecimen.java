@@ -25,6 +25,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
+import java.lang.Math;
+
+
 @Autonomous(name="AutoSpecimen", group="Robot")
 public class AutoSpecimen extends LinearOpMode
 {
@@ -72,7 +75,7 @@ public class AutoSpecimen extends LinearOpMode
     double armPosition = (int)ARM_COLLAPSED_INTO_ROBOT;
     double armPositionFudgeFactor;
 
-    double CountsPerRev = 1425.059; // number of encoder ticks per rotation of the bare motor
+    double CountsPerRev = 1425.059; // number of encoder ticks per rotation of the bare motor with down below
     // 28* (250047.0 / 4913.0) // This is the exact gear ratio of the 50.9:1 Yellow Jacket gearbox
     double WheelDiameterInches = 3.77953;     // For figuring out circumference
     double CountsPerInch = ((CountsPerRev / (WheelDiameterInches * 3.1415926535))); 
@@ -220,7 +223,7 @@ public class AutoSpecimen extends LinearOpMode
         telemetry.addData("Byleth","Byleth is cool");
         telemetry.update();
         if (!leftDrive.isBusy()){
-            SimpleEncoderDrive(0.5,7.0,forward);
+            SimpleEncoderDrive(0.5,24.0,forward);
         }
 
         // encoderDriveSmooth(5.0,24.0,-1,0,5); //move backward 24 inches
@@ -348,38 +351,48 @@ public class AutoSpecimen extends LinearOpMode
     public void SimpleEncoderDrive(double speed, double Inches, double direction){
 
         if (opModeIsActive() ) {
+            
+            double targetSpeed = 0;
 
         
             leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION); //Basically, run with encoder for a set distance. 
             leftDrive.setTargetPosition((int)(Inches*CountsPerInch/3));
             rightDrive.setTargetPosition((int)(Inches*CountsPerInch/3));
+            leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION); //Basically, run with encoder for a set distance. 
             leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-            leftDrive.setPower(Range.clip(speed, -1, 1));
-            rightDrive.setPower(Range.clip(speed, -1, 1));
             
+            if (Inches > 1){
+                rightDrive.setPower(0.1);
+                leftDrive.setPower(0.1);
+            }
+            else {
+                telemetry.addLine("Inches invalid, must be greater than 1!");
+            }
+
 
             while (leftDrive.isBusy() || leftDrive.isBusy()){
 
+                double error = leftDrive.getCurrentPosition()/leftDrive.getTargetPosition();
+                double targetVelocity = (Math.pow(-3, -20*error)+1)*speed*2000; //Confused? Open desmos and look from 0 to 1, get rid of * 1000 and speed
+                ((DcMotorEx)(rightDrive)).setVelocity(targetVelocity);
+                ((DcMotorEx)(leftDrive)).setVelocity(targetVelocity);
                 telemetry.addData("Running Distance:", Inches);
-                telemetry.update();
                 telemetry.addData("targetPos",rightDrive.getTargetPosition());
                 telemetry.addData("currentPos",rightDrive.getCurrentPosition());
-                
-                    
-                    
+                telemetry.addData("currentVelocity", ((DcMotorEx) rightDrive).getVelocity());
+                telemetry.addData("targetVelocity", targetVelocity);
+                telemetry.update();
                 
 
             }
-            telemetry.addLine("RAHHHHH BRAKING");
-            leftDrive.setPower(0.2*(-speed));
-            rightDrive.setPower(0.2*(-speed));
-            double temp = speed*4*100;
-            sleep((int)temp);
+            // telemetry.addLine("RAHHHHH BRAKING");
+            // leftDrive.setPower(0.2*(-speed));
+            // rightDrive.setPower(0.2*(-speed));
+            // double temp = speed*4*100;
+            // sleep((int)temp);
             leftDrive.setPower(0);
             rightDrive.setPower(0);
             //leftDrive.setPower(0);
@@ -387,11 +400,13 @@ public class AutoSpecimen extends LinearOpMode
             telemetry.addData("Ran Distance:", Inches);
             telemetry.addData("LongSpeed",(int)temp);
             telemetry.update();
-            sleep(2000);
+            sleep(4000);
 
         }
 
     }
+
+
 
     
     public void gyroDrive(double targetAngle, double targetSpeed, int direction) {
