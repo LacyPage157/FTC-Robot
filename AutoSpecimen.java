@@ -50,11 +50,11 @@ public class AutoSpecimen extends LinearOpMode
                     * 1/360.0; // we want ticks per degree, not per rotation
 
     final double ARM_COLLAPSED_INTO_ROBOT  = 0;
-    final double ARM_COLLECT               = 150 * ARM_TICKS_PER_DEGREE;
-    final double ARM_CLEAR_BARRIER         = 130 * ARM_TICKS_PER_DEGREE;
-    final double ARM_SCORE_SPECIMEN        = 60 * ARM_TICKS_PER_DEGREE;
-    final double ARM_SCORE_SAMPLE_IN_LOW   = 60 * ARM_TICKS_PER_DEGREE;
-    final double ARM_ATTACH_HANGING_HOOK   = 20 * ARM_TICKS_PER_DEGREE;
+    final double ARM_COLLECT               = 250 * ARM_TICKS_PER_DEGREE;
+    final double ARM_CLEAR_BARRIER         = 230 * ARM_TICKS_PER_DEGREE;
+    final double ARM_SCORE_SPECIMEN        = 160 * ARM_TICKS_PER_DEGREE;
+    final double ARM_SCORE_SAMPLE_IN_LOW   = 160 * ARM_TICKS_PER_DEGREE;
+    final double ARM_ATTACH_HANGING_HOOK   = 120 * ARM_TICKS_PER_DEGREE;
     final double ARM_WINCH_ROBOT           = 15  * ARM_TICKS_PER_DEGREE;
 
     /* Variables to store the speed the intake servo should be set at to intake, and deposit game elements. */
@@ -230,7 +230,9 @@ public class AutoSpecimen extends LinearOpMode
             // SimpleEncoderDrive(0.5,24.0,forward);
             SimpleEncoderTurn(0.5, -90);
         }
-        
+        while (opModeIsActive()){
+        armCollect();
+        }
         //moves 2 5/16th inch to the right 
 
         // encoderDriveSmooth(5.0,24.0,-1,0,5); //move backward 24 inches
@@ -241,17 +243,84 @@ public class AutoSpecimen extends LinearOpMode
 
 
 
-
-
-
-
-
-
-
-
-
         //We will build the rest of this once the other functions are made...
     }
+
+
+
+    //Arm Position Functions:
+    public void armCollect(){
+        armPosition = ARM_COLLECT; //Pick up blocks
+        wrist.setPosition(WRIST_FOLDED_OUT);
+        intake.setPower(INTAKE_COLLECT);
+
+        armMotor.setTargetPosition((int) (armPosition)); //Set the position to an set constant initialized at the start of program
+
+        ((DcMotorEx) armMotor).setVelocity(2100); //Run it at a constant velocity for the sake of accuracy instead of having to deal with modifying powert
+        //The RUN_TO_POSITION mode for a DcMotor will automatically adjust the power to get to our target, so we should just adjust speed
+        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        while (armMotor.isBusy()){
+            telemetry.addData("Current Arm Position:",armMotor.getCurrentPosition()); //Basically hold the program up while things run. 
+            telemetry.update();
+        
+        }
+    }
+
+
+    public void armBucket(){
+        armPosition = ARM_SCORE_SAMPLE_IN_LOW; //For use with low bucket -- 
+        wrist.setPosition(WRIST_FOLDED_OUT);
+
+        armMotor.setTargetPosition((int) (armPosition));
+
+        ((DcMotorEx) armMotor).setVelocity(2100);
+        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        while (armMotor.isBusy()){
+            telemetry.addData("Current Arm Position:",armMotor.getCurrentPosition());
+            telemetry.update();
+        
+        }
+    }
+
+    public void setIntake (int power){
+        //Power takes -1, 0 or 1 -- -1 is intake collecting, 1 is depositing
+        switch(power){
+            case -1: 
+                intake.setPower(INTAKE_COLLECT);
+                break;
+            case 0:
+                intake.setPower(INTAKE_OFF);
+                break;
+            case 1:
+                intake.setPower(INTAKE_DEPOSIT);
+                break;
+            default:
+                telemetry.addLine("ERROR 1: SetIntake(int) takes type int from -1 to 1.");
+                telemetry.addLine("ERROR 1: takes -1, 0 or 1 ... -1 is collecting, 1 is depositing");
+                telemetry.update();
+                sleep(1000);
+
+        }
+    }
+
+    public void armClip(){
+        armPosition = ARM_SCORE_SPECIMEN; //Clip a specimen on high rung
+        wrist.setPosition(WRIST_FOLDED_IN);
+        intake.setPower(INTAKE_OFF);
+
+        armMotor.setTargetPosition((int) (armPosition));
+
+        ((DcMotorEx) armMotor).setVelocity(2100);
+        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        while (armMotor.isBusy()){
+            telemetry.addData("Current Arm Position:",armMotor.getCurrentPosition());
+            telemetry.update();
+        
+        }
+    }
+
+
 
     public double getHeading(){
         //returns the Yaw -- Makes it easier so I can just refrence 
@@ -271,6 +340,9 @@ public class AutoSpecimen extends LinearOpMode
          * Heading is the degrees we should be going to. For staying straight, use current heading.
          * Timeout will be used at a later date once it is worked out.
         */
+
+       //THIS FUNCTION IS DEPRECATED AND EXISTS FOR HISTORICAL CATALOGING AND FUTURE REFERENCE
+
         double startTime = runtime.seconds();
         double Heading = 0;
         boolean notAtTarget = true;
@@ -361,10 +433,25 @@ public class AutoSpecimen extends LinearOpMode
             
             double targetSpeed = 0;
 
+
+            //Basic dummyproofing
+            if ((speed > 1 || speed < 0)){
+                telemetry.addLine("ERROR 2: double speed takes values only between 0.0 and 1.0");
+                telemetry.update();
+                sleep(1000);
+            }
+            if (Inches < 0){
+                telemetry.addLine("ERROR 3: Inches must not be negative -- Change direction to reverse instead!");
+                telemetry.update();
+                sleep(1000);
+            }
+
         
             leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            leftDrive.setTargetPosition((int)(Inches*CountsPerInch*direction));
+            leftDrive.setTargetPosition((int)(Inches*CountsPerInch*direction)); //Set the distance according to our set variables.
+            //That being, the target position in terms of Encoder ticks so that the motor can read the value. The multiplication
+            //changes it from terms we are familiar with to those that the motor is familiar with, in essence. 
             rightDrive.setTargetPosition((int)(Inches*CountsPerInch*direction));
             leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION); //Basically, run with encoder for a set distance. 
@@ -372,21 +459,26 @@ public class AutoSpecimen extends LinearOpMode
             rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             
             if (Inches > 1){
-                rightDrive.setPower(0.1);
+                rightDrive.setPower(0.1); //In essence, give the motors a short push so that the while Loop may activate.
                 leftDrive.setPower(0.1);
                 sleep(100);
             }
             else {
-                telemetry.addLine("Inches invalid, must be greater than 1!");
+                telemetry.addLine("ERROR 4: Inches invalid, must be greater than 1!");
+                telemetry.update();
+                sleep(1000);
             }
 
 
             while (leftDrive.isBusy() || leftDrive.isBusy()){
 
-                double error = 1-((double)rightDrive.getCurrentPosition())/((double)rightDrive.getTargetPosition());
-                double targetVelocity = ((-1/Math.pow(3, ((18*(1.1-speed))*error)))+1)*speed*1000; //Confused? Open desmos and look from 0 to 1, get rid of * 1000 and speed
+                double error = 1-((double)rightDrive.getCurrentPosition())/((double)rightDrive.getTargetPosition()); //Normalize, then make it 
+                //move right to left starting at one, ending at 0.
+                double targetVelocity = ((-1/Math.pow(3, ((18*(1.1-speed))*error)))+1)*speed*1000; //Confused? Open desmos and look from 0 to 1, 
+                //get rid of * 1000 and speed
                 ((DcMotorEx)(rightDrive)).setVelocity(targetVelocity);
-                ((DcMotorEx)(leftDrive)).setVelocity(targetVelocity);
+                ((DcMotorEx)(leftDrive)).setVelocity(targetVelocity); //Typecast to MotorEx (ie. Motor Premium) 
+                // and set to a speed relative to a curve for sake of smoothness.
                 telemetry.addData("Running Distance:", Inches);
                 telemetry.addData("targetPos",rightDrive.getTargetPosition());
                 telemetry.addData("currentPos",rightDrive.getCurrentPosition());
@@ -402,15 +494,13 @@ public class AutoSpecimen extends LinearOpMode
             // rightDrive.setPower(0.2*(-speed));
             // double temp = speed*4*100;
             // sleep((int)temp);
-            leftDrive.setPower(0);
+            leftDrive.setPower(0); //Stop the motors
             rightDrive.setPower(0);
             //leftDrive.setPower(0);
             //rightDrive.setPower(0);
             telemetry.addData("Ran Distance:", Inches);
             //telemetry.addData("LongSpeed",(int)temp);
             telemetry.update();
-            sleep(4000);
-
         }
 
     }
@@ -419,6 +509,9 @@ public class AutoSpecimen extends LinearOpMode
 
     
     public void gyroDrive(double targetAngle, double targetSpeed, int direction) {
+
+
+        //THIS FUNCTION IS DEPRECATED AND EXISTS FOR HISTORICAL CATALOGING AND FUTURE REFERENCE
         
         telemetry.addLine("GyroRunning");
         //telemetry.update();
@@ -472,6 +565,8 @@ public class AutoSpecimen extends LinearOpMode
         return robotError;
     }
     
+
+    
     public void SimpleEncoderTurn(double speed, double angle) {
         leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -483,6 +578,7 @@ public class AutoSpecimen extends LinearOpMode
         if (angle>0){
             rightDrive.setDirection(DcMotor.Direction.REVERSE);
             leftDrive.setDirection(DcMotor.Direction.REVERSE);
+            //Which direction to turn? These will set it so that it turns left or right depending on the angle.
         }
         if (angle<0){
             rightDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -492,7 +588,7 @@ public class AutoSpecimen extends LinearOpMode
 
         
         rightDrive.setPower(0.1); //Basically, give the motors a small start so that the while loop can activate
-        leftDrive.setPower(0.1);
+        leftDrive.setPower(0.1); //Might get rid of this...
         imu.resetYaw();
         
         
@@ -500,26 +596,32 @@ public class AutoSpecimen extends LinearOpMode
             
             double error = 1-(getHeading()/angle); 
             //1 - the normalized value so that starting distance is one, ending distance = 0. ^^ MATHHH
-            //double targetVelocity = (Math.pow(1.5,(error-1)*9))*speed*3000; //Confused? Open desmos and look from 0 to 1, get rid of * 1000 and speed and stuff. Just a velocity curve
+            //double targetVelocity = (Math.pow(1.5,(error-1)*9))*speed*3000; //Confused? Open desmos and look from 0 to 1,
+            //get rid of * 1000 and speed and stuff. Just a velocity curve
             double targetVelocity = ((-1/Math.pow(2, ((3)*error)))+1)*speed*1000;
-            //FOR 0.5 SPEED -- 1.4 SCALING BASE 
+            //double targetVelocity = ((0.5*(Math.sin(Math.PI*error-(0.5*Math.PI))))+0.5)*speed*1000; --NEEDS TO BE TESTED - REMOVE COMMENT ONCE TESTED
+            //FOR 0.5 SPEED -- 1.4 SCALING BASE -- SECOND EQUATION CURRENT -- TO SWITCH EQUATION, UNCOMMENT ONE AND COMMENT ANOTHER
             ((DcMotorEx)(rightDrive)).setVelocity(targetVelocity);
-            ((DcMotorEx)(leftDrive)).setVelocity(targetVelocity); //Type cast to the version of motor that can be used with PID velocity control while in RunToPosition; mode.
+            ((DcMotorEx)(leftDrive)).setVelocity(targetVelocity); 
+            //Type cast to the version of motor that can be used with PID velocity control while in RunToPosition mode.
             
             telemetry.addData("Running Angle:", angle);
-            telemetry.addData("targetPos",rightDrive.getTargetPosition());
-            telemetry.addData("currentPos",rightDrive.getCurrentPosition());
-            telemetry.addData("currentVelocity", ((DcMotorEx) rightDrive).getVelocity());
-            telemetry.addData("targetVelocity", targetVelocity);
+            //Target heading
+            telemetry.addData("targetPos",rightDrive.getTargetPosition()); //Target for motors
+            telemetry.addData("currentPos",rightDrive.getCurrentPosition()); //Current motor position
+            telemetry.addData("currentVelocity", ((DcMotorEx) rightDrive).getVelocity()); //Typecast to motor premium, in essence, to read velocity
+            telemetry.addData("targetVelocity", targetVelocity); //The curve value -- Make sure we are following the curve
             telemetry.addData("getHeading", getHeading());
-            telemetry.addData("error", error);
+            //Current heading
+            telemetry.addData("error", error); //Will return progress of turn in essence,
+            //1 is the start, 0 is the end, imagine right to left
             telemetry.update();
             
 
         }
         rightDrive.setPower(0.0);
         leftDrive.setPower(0.0);
-        sleep(4000);
+        // sleep(4000); //Debug sleep
         
 
     }
