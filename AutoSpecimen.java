@@ -228,10 +228,20 @@ public class AutoSpecimen extends LinearOpMode
             // SimpleEncoderDrive(0.5,12.0,reverse);
             // sleep(1000);
             // SimpleEncoderDrive(0.5,24.0,forward);
-            SimpleEncoderTurn(0.5, -90);
-        }
-        while (opModeIsActive()){
-        armCollect();
+            
+            SimpleEncoderDrive(0.5,8,reverse);
+            armUp(false);
+            SimpleEncoderTurn(0.7, 179);
+            armClip(false);
+            SimpleEncoderDrive(1,14,forward);
+            SimpleEncoderDrive(1,12,reverse);
+            armUp(false);
+            SimpleEncoderDrive(0.5,2,reverse);
+            SimpleEncoderTurn(0.5,-90);
+            SimpleEncoderDrive(0.5,48,forward);
+            
+            
+            
         }
         //moves 2 5/16th inch to the right 
 
@@ -249,7 +259,7 @@ public class AutoSpecimen extends LinearOpMode
 
 
     //Arm Position Functions:
-    public void armCollect(){
+    public void armCollect(Boolean pause){
         armPosition = ARM_COLLECT; //Pick up blocks
         wrist.setPosition(WRIST_FOLDED_OUT);
         intake.setPower(INTAKE_COLLECT);
@@ -260,7 +270,7 @@ public class AutoSpecimen extends LinearOpMode
         //The RUN_TO_POSITION mode for a DcMotor will automatically adjust the power to get to our target, so we should just adjust speed
         armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        while (armMotor.isBusy()){
+        while (armMotor.isBusy()&& pause){
             telemetry.addData("Current Arm Position:",armMotor.getCurrentPosition()); //Basically hold the program up while things run. 
             telemetry.update();
         
@@ -268,7 +278,7 @@ public class AutoSpecimen extends LinearOpMode
     }
 
 
-    public void armBucket(){
+    public void armBucket(Boolean pause){
         armPosition = ARM_SCORE_SAMPLE_IN_LOW; //For use with low bucket -- 
         wrist.setPosition(WRIST_FOLDED_OUT);
 
@@ -276,7 +286,21 @@ public class AutoSpecimen extends LinearOpMode
 
         ((DcMotorEx) armMotor).setVelocity(2100);
         armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        while (armMotor.isBusy()){
+        while (armMotor.isBusy() && pause){
+            telemetry.addData("Current Arm Position:",armMotor.getCurrentPosition());
+            telemetry.update();
+        
+        }
+    }
+    public void armUp(Boolean pause){
+        armPosition = ARM_ATTACH_HANGING_HOOK; //For use with low bucket -- 
+        //wrist.setPosition(WRIST_FOLDED_OUT);
+
+        armMotor.setTargetPosition((int) (armPosition));
+
+        ((DcMotorEx) armMotor).setVelocity(2100);
+        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        while (armMotor.isBusy() && pause){
             telemetry.addData("Current Arm Position:",armMotor.getCurrentPosition());
             telemetry.update();
         
@@ -304,16 +328,17 @@ public class AutoSpecimen extends LinearOpMode
         }
     }
 
-    public void armClip(){
-        armPosition = ARM_SCORE_SPECIMEN; //Clip a specimen on high rung
+    public void armClip(Boolean pause){
+        armPosition = ARM_SCORE_SAMPLE_IN_LOW*1.1; //Clip a specimen on high rung
         wrist.setPosition(WRIST_FOLDED_IN);
         intake.setPower(INTAKE_OFF);
 
         armMotor.setTargetPosition((int) (armPosition));
 
-        ((DcMotorEx) armMotor).setVelocity(2100);
+        ((DcMotorEx) armMotor).setVelocity(4000);
+        armMotor.setPower(1);
         armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        while (armMotor.isBusy()){
+        while (armMotor.isBusy() && pause){
             telemetry.addData("Current Arm Position:",armMotor.getCurrentPosition());
             telemetry.update();
         
@@ -430,6 +455,8 @@ public class AutoSpecimen extends LinearOpMode
     public void SimpleEncoderDrive(double speed, double Inches, double direction){
 
         if (opModeIsActive() ) {
+            leftDrive.setDirection(DcMotor.Direction.FORWARD);
+            rightDrive.setDirection(DcMotor.Direction.REVERSE);
             
             double targetSpeed = 0;
 
@@ -470,7 +497,7 @@ public class AutoSpecimen extends LinearOpMode
             }
 
 
-            while (leftDrive.isBusy() || leftDrive.isBusy()){
+            while (leftDrive.isBusy() || rightDrive.isBusy()){
 
                 double error = 1-((double)rightDrive.getCurrentPosition())/((double)rightDrive.getTargetPosition()); //Normalize, then make it 
                 //move right to left starting at one, ending at 0.
