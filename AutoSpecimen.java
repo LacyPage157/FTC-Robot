@@ -42,6 +42,25 @@ public class AutoSpecimen extends LinearOpMode
     public IMU imu;
     //End Hardware Decleration Section
 
+    //Start April Tag Section
+    final double DESIRED_DISTANCE = 24.0; //  this is how close the camera should get to the target (inches)
+    //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
+    //  applied to the drive motors to correct the error.
+    //  Drive = Error * Gain    Make these values smaller for smoother control, or larger for a more aggressive response.
+    final double SPEED_GAIN =   0.02 ;   //  Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
+    final double TURN_GAIN  =   0.01 ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
+    final double MAX_AUTO_SPEED = 0.5;   //  Clip the approach speed to this max value (adjust for your robot)
+    final double MAX_AUTO_TURN  = 0.25;  //  Clip the turn speed to this max value (adjust for your robot)
+    private static final boolean USE_WEBCAM = true;  // Set true to use a webcam, or false for a phone camera
+    private static int DESIRED_TAG_ID = -1;    // Choose the tag you want to approach or set to -1 for ANY tag.
+    private VisionPortal visionPortal;               // Used to manage the video source.
+    private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
+    private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
+    private float robRange;
+    private float robBearing;
+    private float robYaw;
+    //END APRIL TAG SECTION
+
 
     final double ARM_TICKS_PER_DEGREE =
             28 // number of encoder ticks per rotation of the bare motor
@@ -189,6 +208,9 @@ public class AutoSpecimen extends LinearOpMode
 
         //End IMU Section//
 
+        // Initialize the Apriltag Detection process
+        initAprilTag();
+
 
 
 
@@ -242,19 +264,20 @@ public class AutoSpecimen extends LinearOpMode
             // SimpleEncoderDrive(0.5,30,forward);
             // SimpleEncoderTurn(1,-90);
             
-            SimpleEncoderDrive(0.5,8,reverse);
-            SimpleEncoderTurn(0.5, -179);
-            armClip(false);
-            SimpleEncoderDrive(0.2,5.0,reverse);
-            armClip(false); //Arm Up right after
-            SimpleEncoderDrive(1,21,forward);
-            SimpleEncoderDrive(0.5,17,reverse);
+            SimpleEncoderDrive(0.5,8,reverse, 5);
+            SimpleEncoderTurn(0.5, -179,6);
+            armClip(false,0.8);
+            SimpleEncoderDrive(0.2,5.0,reverse, 5);
+            armUp(true);
+            armClip(false,1); //Arm Up right after
+            SimpleEncoderDrive(1,21,forward, 5);
+            SimpleEncoderDrive(0.5,17,reverse), 5;
             armUp(false);
-            SimpleEncoderTurn(0.5,-90);
-            SimpleEncoderDrive(0.5,30,forward);
-            SimpleEncoderTurn(1,90);
-            SimpleEncoderDrive(0.5,30,forward);
-            SimpleEncoderTurn(1,-90);
+            SimpleEncoderTurn(0.5,-90,4);
+            SimpleEncoderDrive(0.5,30,forward, 5);
+            SimpleEncoderTurn(1,90,4);
+            SimpleEncoderDrive(0.5,30,forward, 5);
+            SimpleEncoderTurn(1,-90,4);
             
             
             
@@ -358,8 +381,8 @@ public class AutoSpecimen extends LinearOpMode
         }
     }
 
-    public void armClip(Boolean pause){
-        armPosition = ARM_SCORE_SAMPLE_IN_LOW*1.1; //Clip a specimen on high rung
+    public void armClip(Boolean pause,double factor){
+        armPosition = ARM_SCORE_SAMPLE_IN_LOW*factor; //Clip a specimen on high rung
         wrist.setPosition(WRIST_FOLDED_IN);
         intake.setPower(INTAKE_OFF);
 
@@ -482,11 +505,13 @@ public class AutoSpecimen extends LinearOpMode
         }
     }
 
-    public void SimpleEncoderDrive(double speed, double Inches, double direction){
+    public void SimpleEncoderDrive(double speed, double Inches, double direction, double timeout){
 
         if (opModeIsActive() ) {
             leftDrive.setDirection(DcMotor.Direction.FORWARD);
             rightDrive.setDirection(DcMotor.Direction.REVERSE);
+
+            double startTime = runtime.seconds();
             
             double targetSpeed = 0;
 
@@ -527,7 +552,7 @@ public class AutoSpecimen extends LinearOpMode
             }
 
 
-            while (leftDrive.isBusy() || rightDrive.isBusy()){
+            while ((leftDrive.isBusy() || rightDrive.isBusy())&&((startTime + timeout)<runTime.seconds())){
 
                 double error = 1-((double)rightDrive.getCurrentPosition())/((double)rightDrive.getTargetPosition()); //Normalize, then make it 
                 //move right to left starting at one, ending at 0.
@@ -695,13 +720,15 @@ public class AutoSpecimen extends LinearOpMode
     
 
     
-    public void SimpleEncoderTurn(double speed, double angle) {
+    public void SimpleEncoderTurn(double speed, double angle, double timeout) {
         leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER); //Basically, run with encoder for a set distance that we set above 
         leftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        double startTime = runtime.seconds();
         
         if (angle>0){
             rightDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -721,16 +748,18 @@ public class AutoSpecimen extends LinearOpMode
         double error = 1;
         
         
-        while (!(getHeading()>(angle-0.4) && getHeading()<(angle+0.4))&&(error!=0)){
+        while ((!(getHeading()>(angle-0.4) && getHeading()<(angle+0.4))&&(error!=0)) && ((startTime+timeout)<runTime.seconds())){
             
             error = 1-(getHeading()/angle); 
+            int cof = 1000;
             //1 - the normalized value so that starting distance is one, ending distance = 0. ^^ MATHHH
             //double targetVelocity = (Math.pow(1.5,(error-1)*9))*speed*3000; //Confused? Open desmos and look from 0 to 1,
             //get rid of * 1000 and speed and stuff. Just a velocity curve
-            if (error<0.002){
+            if (error<0.004){
                 error=0;
+                cof = 3000;
             }
-            double targetVelocity = ((-1/Math.pow(2, ((3)*error)))+1)*speed*1000;
+            double targetVelocity = ((-1/Math.pow(2, ((3)*error)))+1)*speed*cof;
             //double targetVelocity = ((0.5*(Math.sin(Math.PI*error-(0.5*Math.PI))))+0.5)*speed*1000; --NEEDS TO BE TESTED - REMOVE COMMENT ONCE TESTED
             //FOR 0.5 SPEED -- 1.4 SCALING BASE -- SECOND EQUATION CURRENT -- TO SWITCH EQUATION, UNCOMMENT ONE AND COMMENT ANOTHER
             ((DcMotorEx)(rightDrive)).setVelocity(targetVelocity);
@@ -758,9 +787,159 @@ public class AutoSpecimen extends LinearOpMode
         
 
     }
+
+    //Begin April Tag Functions: 
+    public void changeDesiredTag(int tag){
+        DESIRED_TAG_ID = tag;
+    }
+    public void setDecimation(int dec){
+        aprilTag.setDecimation(dec);
+    }
+    private void initAprilTag() {
+        // Create the AprilTag processor the easy way.
+        aprilTag = AprilTagProcessor.easyCreateWithDefaults();
+        // Create the vision portal the easy way.
+        if (USE_WEBCAM) {
+            visionPortal = VisionPortal.easyCreateWithDefaults(
+                hardwareMap.get(WebcamName.class, "Webcam 1"), aprilTag);
+        } else {
+            visionPortal = VisionPortal.easyCreateWithDefaults(
+                BuiltinCameraDirection.BACK, aprilTag);
+        }
+    }   // end method initAprilTag()
+    /*
+     Manually set the camera gain and exposure.
+     This can only be called AFTER calling initAprilTag(), and only works for Webcams;
+    */
+    private void    setManualExposure(int exposureMS, int gain) {
+        // Wait for the camera to be open, then use the controls
+        if (visionPortal == null) {
+            return;
+        }
+        // Make sure camera is streaming before we try to set the exposure controls
+        if (visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
+            telemetry.addData("Camera", "Waiting");
+            telemetry.update();
+            while (!isStopRequested() && (visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING)) {
+                sleep(20);
+            }
+            telemetry.addData("Camera", "Ready");
+            telemetry.update();
+        }
+        // Set camera controls unless we are stopping.
+        if (!isStopRequested())
+        {
+            ExposureControl exposureControl = visionPortal.getCameraControl(ExposureControl.class);
+            if (exposureControl.getMode() != ExposureControl.Mode.Manual) {
+                exposureControl.setMode(ExposureControl.Mode.Manual);
+                sleep(50);
+            }
+            exposureControl.setExposure((long)exposureMS, TimeUnit.MILLISECONDS);
+            sleep(20);
+            GainControl gainControl = visionPortal.getCameraControl(GainControl.class);
+            gainControl.setGain(gain);
+            sleep(20);
+            telemetry.addData("Camera", "Ready");
+            telemetry.update();
+        }
+    }
+    public void moveRobot(double x, double yaw) {
+        // Calculate left and right wheel powers.
+        double leftPower    = x - yaw;
+        double rightPower   = x + yaw;
+        // Normalize wheel powers to be less than 1.0
+        double max = Math.max(Math.abs(leftPower), Math.abs(rightPower));
+        if (max >1.0) {
+            leftPower /= max;
+            rightPower /= max;
+        }
+        // Send powers to the wheels.
+        leftDrive.setPower(leftPower);
+        rightDrive.setPower(rightPower);
+    }
+
+    public void aprilTagDetector(){
+        if (opModeIsActive()){
+            boolean targetFound     = false;    // Set to true when an AprilTag target is detected
+            double  drive           = 0;        // Desired forward power/speed (-1 to +1) +ve is forward
+            double  turn            = 0;        // Desired turning power/speed (-1 to +1) +ve is CounterClockwise
+            
+        }
+        while (opModeIsActive())
+        {
+            targetFound = false;
+            desiredTag  = null;
+            // Step through the list of detected tags and look for a matching tag
+            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+            for (AprilTagDetection detection : currentDetections) {
+                // Look to see if we have size info on this tag.
+                if (detection.metadata != null) {
+                    //  Check to see if we want to track towards this tag.
+                    if ((DESIRED_TAG_ID < 0) || (detection.id == DESIRED_TAG_ID)) {
+                        // Yes, we want to use this tag.
+                        targetFound = true;
+                        desiredTag = detection;
+                        break;  // don't look any further.
+                    } else {
+                        // This tag is in the library, but we do not want to track it right now.
+                        telemetry.addData("Skipping", "Tag ID %d is not desired", detection.id);
+                    }
+                } else {
+                    // This tag is NOT in the library, so we don't have enough information to track to it.
+                    telemetry.addData("Unknown", "Tag ID %d is not in TagLibrary", detection.id);
+                }
+            }
+            //first: Rotate around until you locate desired tag
+            // {
+            // }
+            // Tell the driver what we see, and what to do.
+            if (targetFound) {
+                // telemetry.addData("\n>","HOLD Left-Bumper to Drive to Target\n");
+                telemetry.addData("Found", "ID %d (%s)", desiredTag.id, desiredTag.metadata.name);
+                telemetry.addData("Range",  "%5.1f inches", desiredTag.ftcPose.range);
+                telemetry.addData("Bearing","%3.0f degrees", desiredTag.ftcPose.bearing);
+                telemetry.addData("Yaw", "%3.0f degrees", desiredTag.ftcPose.yaw);
+
+                
+                
+                if (desiredTag.ftcPose.bearing != 0 && desiredTag.ftcPose.yaw != 0){
+                    
+                    //set temprorary variables for yaw, range bearing at that moment
+                    robBearing = desiredTag.ftcPose.bearing;
+                    robRange = desiredTag.ftcPose.bearing;
+                    robYaw = desiredTag.ftcPose.yaw;
+                    boolean posRotate = true;
+                    //move robot to be aligned with the yaw
+                    //HardCode.rotateRobot(robYaw);
+                    SimpleEncoderTurn(0.5, robYaw, 5);
+                    //rotate to the left or right depending on the value of the yaw
+                    
+                    //move to the left using the cos code
+                    double needDistance = Math.cos(90 - robBearing) * robRange;
+                    //HardCode.setDesiredDistance(needDistance);
+                    //rotate right by 90 degrees the other way
+                    telemetry.addData("Yaw", "Turn 90 degrees opposite of the first direction to look at tag");
+                    if(robYaw < 0)
+                    {
+                        SimpleEncoderTurn(0.5,90,5);
+                        telemetry.addData("Yaw","rotate 90 degress right");
+                    }
+                    else if(robYaw > 0)
+                    {
+                        SimpleEncoderTurn(0.5,-90,5);
+                        telemetry.addData("Yaw","rotate 90 degrees left");
+                    }
+
+                    SimpleEncoderDrive(0.5,(int)needDistance, forward, 10);
+                }
+
+    }
+
+    }
     
 
     
 
 
     }
+}
