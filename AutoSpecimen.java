@@ -2,6 +2,15 @@ package org.firstinspires.ftc.teamcode;
 
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
+import java.util.concurrent.TimeUnit;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
 import java.lang.annotation.Target;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -21,8 +30,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-
-package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -72,9 +79,9 @@ public class AutoSpecimen extends LinearOpMode
     private VisionPortal visionPortal;               // Used to manage the video source.
     private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     private AprilTagDetection desiredTag = null;     // Used to hold the data for a detected AprilTag
-    private float robRange;
-    private float robBearing;
-    private float robYaw;
+    private double robRange;
+    private double robBearing;
+    private double robYaw;
     //END APRIL TAG SECTION
 
 
@@ -127,6 +134,10 @@ public class AutoSpecimen extends LinearOpMode
     double Yaw; //NOTE: HEADING IS YAW!!!! THEY ARE THE SAME THING!!! 
     double Pitch;
     double Roll;
+    
+    boolean targetFound     = false;    // Set to true when an AprilTag target is detected
+    double  drive           = 0;        // Desired forward power/speed (-1 to +1) +ve is forward
+    double  turn            = 0;
 
     double programStartOrientation;
     public double stayOnHeading = 84.17; //Arbitrary number decided more or less...
@@ -210,6 +221,9 @@ public class AutoSpecimen extends LinearOpMode
         Yaw   = robotOrientation.getYaw(AngleUnit.DEGREES); //NOTE: HEADING IS YAW!!!! THEY ARE THE SAME THING!!! 
         Pitch = robotOrientation.getPitch(AngleUnit.DEGREES);
         Roll  = robotOrientation.getRoll(AngleUnit.DEGREES);
+        
+                // Desired turning power/speed (-1 to +1) +ve is CounterClockwise
+            
 
         AngularVelocity myRobotAngularVelocity;
 
@@ -238,6 +252,8 @@ public class AutoSpecimen extends LinearOpMode
         waitForStart();
 
         //We will build the rest of this once the other functions are made...
+        
+        
 
 
 
@@ -280,20 +296,28 @@ public class AutoSpecimen extends LinearOpMode
             // SimpleEncoderDrive(0.5,30,forward);
             // SimpleEncoderTurn(1,-90);
             
-            SimpleEncoderDrive(0.5,8,reverse, 5);
-            SimpleEncoderTurn(0.5, -179,6);
+            telemetry.addData("Time", runtime.seconds());
+            telemetry.update();
+            
+            SimpleEncoderDrive(0.5,8,reverse);
+            SimpleEncoderTurn(0.5, -179);
             armClip(false,0.8);
-            SimpleEncoderDrive(0.2,5.0,reverse, 5);
+            telemetry.addData("Time", runtime.seconds());
+            telemetry.update();
+            SimpleEncoderDrive(0.2,6.0,reverse);
             armUp(true);
-            armClip(false,1); //Arm Up right after
-            SimpleEncoderDrive(1,21,forward, 5);
-            SimpleEncoderDrive(0.5,17,reverse), 5;
+            telemetry.addData("Time", runtime.seconds());
+            telemetry.update();
+            armClip(false,0.8); //Arm Up right after
+            SimpleEncoderDrive(1,2,forward);
+            armClip(false,1.1);
+            SimpleEncoderDrive(0.5,17,reverse);
             armUp(false);
-            SimpleEncoderTurn(0.5,-90,4);
-            SimpleEncoderDrive(0.5,30,forward, 5);
-            SimpleEncoderTurn(1,90,4);
-            SimpleEncoderDrive(0.5,30,forward, 5);
-            SimpleEncoderTurn(1,-90,4);
+            SimpleEncoderTurn(0.5,-90);
+            SimpleEncoderDrive(0.5,30,forward);
+            SimpleEncoderTurn(1,90);
+            SimpleEncoderDrive(0.5,30,forward);
+            SimpleEncoderTurn(1,-90);
             
             
             
@@ -398,6 +422,7 @@ public class AutoSpecimen extends LinearOpMode
     }
 
     public void armClip(Boolean pause,double factor){
+        
         armPosition = ARM_SCORE_SAMPLE_IN_LOW*factor; //Clip a specimen on high rung
         wrist.setPosition(WRIST_FOLDED_IN);
         intake.setPower(INTAKE_OFF);
@@ -406,8 +431,11 @@ public class AutoSpecimen extends LinearOpMode
 
         ((DcMotorEx) armMotor).setVelocity(5000);
         armMotor.setPower(1);
+        double startTime = runtime.seconds();
         armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         while (armMotor.isBusy() && pause){
+            telemetry.addData("Time", startTime);
+            telemetry.addData("CurrentTime",runtime.seconds());
             telemetry.addData("Current Arm Position:",armMotor.getCurrentPosition());
             telemetry.update();
         
@@ -521,13 +549,15 @@ public class AutoSpecimen extends LinearOpMode
         }
     }
 
-    public void SimpleEncoderDrive(double speed, double Inches, double direction, double timeout){
+    public void SimpleEncoderDrive(double speed, double Inches, double direction){
 
         if (opModeIsActive() ) {
             leftDrive.setDirection(DcMotor.Direction.FORWARD);
             rightDrive.setDirection(DcMotor.Direction.REVERSE);
 
             double startTime = runtime.seconds();
+            telemetry.addData("Time", startTime);
+            telemetry.update();
             
             double targetSpeed = 0;
 
@@ -568,10 +598,11 @@ public class AutoSpecimen extends LinearOpMode
             }
 
 
-            while ((leftDrive.isBusy() || rightDrive.isBusy())&&((startTime + timeout)<runTime.seconds())){
+            while ((leftDrive.isBusy() || rightDrive.isBusy())){
 
                 double error = 1-((double)rightDrive.getCurrentPosition())/((double)rightDrive.getTargetPosition()); //Normalize, then make it 
                 //move right to left starting at one, ending at 0.
+                telemetry.addData("Time", runtime.seconds());
                 double targetVelocity = ((-1/Math.pow(3, ((18*(1.1-speed))*error)))+1)*speed*1000; //Confused? Open desmos and look from 0 to 1, 
                 //get rid of * 1000 and speed
                 // if(error < 0.01){
@@ -736,7 +767,7 @@ public class AutoSpecimen extends LinearOpMode
     
 
     
-    public void SimpleEncoderTurn(double speed, double angle, double timeout) {
+    public void SimpleEncoderTurn(double speed, double angle) {
         leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -764,7 +795,7 @@ public class AutoSpecimen extends LinearOpMode
         double error = 1;
         
         
-        while ((!(getHeading()>(angle-0.4) && getHeading()<(angle+0.4))&&(error!=0)) && ((startTime+timeout)<runTime.seconds())){
+        while ((!(getHeading()>(angle-0.4) && getHeading()<(angle+0.4))&&(error!=0))){
             
             error = 1-(getHeading()/angle); 
             int cof = 1000;
@@ -876,9 +907,9 @@ public class AutoSpecimen extends LinearOpMode
 
     public void aprilTagDetector(){
         if (opModeIsActive()){
-            boolean targetFound     = false;    // Set to true when an AprilTag target is detected
-            double  drive           = 0;        // Desired forward power/speed (-1 to +1) +ve is forward
-            double  turn            = 0;        // Desired turning power/speed (-1 to +1) +ve is CounterClockwise
+            targetFound = false;    // Set to true when an AprilTag target is detected
+            drive = 0;        // Desired forward power/speed (-1 to +1) +ve is forward
+            turn = 0;        // Desired turning power/speed (-1 to +1) +ve is CounterClockwise
             
         }
         while (opModeIsActive())
@@ -921,13 +952,13 @@ public class AutoSpecimen extends LinearOpMode
                 if (desiredTag.ftcPose.bearing != 0 && desiredTag.ftcPose.yaw != 0){
                     
                     //set temprorary variables for yaw, range bearing at that moment
-                    robBearing = desiredTag.ftcPose.bearing;
-                    robRange = desiredTag.ftcPose.bearing;
-                    robYaw = desiredTag.ftcPose.yaw;
+                    robBearing = (double)desiredTag.ftcPose.bearing;
+                    robRange = (double)desiredTag.ftcPose.bearing;
+                    robYaw = (double)desiredTag.ftcPose.yaw;
                     boolean posRotate = true;
                     //move robot to be aligned with the yaw
                     //HardCode.rotateRobot(robYaw);
-                    SimpleEncoderTurn(0.5, robYaw, 5);
+                    SimpleEncoderTurn(0.5, robYaw);
                     //rotate to the left or right depending on the value of the yaw
                     
                     //move to the left using the cos code
@@ -937,16 +968,16 @@ public class AutoSpecimen extends LinearOpMode
                     telemetry.addData("Yaw", "Turn 90 degrees opposite of the first direction to look at tag");
                     if(robYaw < 0)
                     {
-                        SimpleEncoderTurn(0.5,90,5);
+                        SimpleEncoderTurn(0.5,90);
                         telemetry.addData("Yaw","rotate 90 degress right");
                     }
                     else if(robYaw > 0)
                     {
-                        SimpleEncoderTurn(0.5,-90,5);
+                        SimpleEncoderTurn(0.5,-90);
                         telemetry.addData("Yaw","rotate 90 degrees left");
                     }
 
-                    SimpleEncoderDrive(0.5,(int)needDistance, forward, 10);
+                    SimpleEncoderDrive(0.5,(int)needDistance, forward);
                 }
 
     }
